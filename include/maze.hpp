@@ -21,25 +21,53 @@ union Wall {
     };
 };
 
-template<uint32_t TMAZE_SIZE = 32>
-class Maze : public std::deque<Wall> {
+template<class T = Wall, uint32_t TMAZE_SIZE = 32>
+class Maze : public std::deque<T> {
 public:
-    constexpr Maze() : std::deque<Wall>(TMAZE_SIZE * TMAZE_SIZE) {}
+    enum class Direction : uint8_t {
+        NORTH, EAST, SOUTH, WEST,
+    };
 
-    reference operator[](const Coordinate &c) noexcept {
+    constexpr Maze() : std::deque<T>(TMAZE_SIZE * TMAZE_SIZE) {}
+
+    static constexpr bool IsOnRange(const Coordinate &c) {
+        return c.x >= 0 && c.x < TMAZE_SIZE && c.y >= 0 && c.y < TMAZE_SIZE;
+    }
+
+    static constexpr bool IsOutOfRange(const Coordinate &c) {
+        return !IsOnRange(c);
+    }
+
+    constexpr bool HasCheckedWall(const Coordinate &c) const {
+        return HasCheckedWall(get(c.x, c.y));
+    }
+
+    constexpr bool HasCheckedWall(const T &w) const {
+        return ((w.flags >> 4) == 0b1111);
+    }
+
+    constexpr bool WallExists(const Coordinate &c, const Direction d) const {
+        return WallExists(get(c.x, c.y), d);
+    }
+
+    constexpr bool WallExists(const T &w, const Direction d) const {
+        return ((w.flags >> static_cast<uint8_t>(d)) & 1);
+    }
+
+    constexpr auto operator[](const Coordinate &c) noexcept {
         return get(c.x, c.y);
     }
 
-    const_reference operator[](const Coordinate &c) const noexcept {
+    constexpr auto operator[](const Coordinate &c) const noexcept {
         return get(c.x, c.y);
     }
 
-    reference get(const int x, const int y) noexcept {
-        return std::deque<Wall>::operator[](x + y * TMAZE_SIZE);
+    constexpr auto get(const int x, const int y) noexcept {
+        return std::deque<T>::operator[](x + y * TMAZE_SIZE);
     }
 
-    const_reference get(const int x, const int y) const noexcept {
-        return std::deque<Wall>::operator[](x + y * TMAZE_SIZE);
+    constexpr auto get(const int x, const int y) const noexcept {
+        return std::deque<T>::operator[](x + y * TMAZE_SIZE);
     }
 
 //    reference at(const Coordinate &c) {

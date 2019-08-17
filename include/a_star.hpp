@@ -1,168 +1,162 @@
 //
-// Created by ryunosuke on 19/07/15.
+// Created by ryunosuke on 2019/08/16.
 //
-
 #pragma once
 
-//#include <cstdint>
-//#include <deque>
-
-
-#include <queue>
+#include "maze.hpp"
 #include <cmath>
 #include <algorithm>
-//#include <algorithm>
-
-struct Wall {
-    bool has_checked;
-    bool north;
-    bool east;
-    bool south;
-    bool west;
-
-    Wall() : has_checked(false), north(false), east(false), south(false), west(false) {}
-};
-
-struct Coordinate {
-    int8_t x, y;
-
-    Coordinate() : x(0), y(0) {}
-};
 
 struct Node {
-    enum class State : uint8_t {
-        OPEN, CLOSE
-    };
-    State state;
     Coordinate coordinate;
-    Wall wall;
     float cost_f;
-    float cost_g;
-    float cost_h;
 
-    Node() : state(State::OPEN), coordinate(), wall(), cost_f(0.f), cost_g(0.f), cost_h(0.f) {}
+    constexpr Node() : coordinate(), cost_f(0.f) {}
+
+    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f) {}
+
+    struct Less {
+        bool operator()(const Node &x, const Node &y) const { return x.cost_f < y.cost_f; }
+    };
 };
 
-struct Compare {
-    bool operator()(const Node &x, const Node &y) const { return x.cost_f < y.cost_f; }
-};
-
-template<typename _Tp, typename _Sequence = std::vector<_Tp>, typename _Compare  = std::less<typename _Sequence::value_type> >
-class AStarPriorityQueue : public std::priority_queue<_Tp, _Sequence, _Compare> {
-
-};
+using Nodes = std::deque<Node>;
 
 class AStarSearch {
 public:
-    static constexpr int kMazeSize = 16;
+    AStarSearch(const Coordinate &start_coordinate, const Coordinate &goal_coordinate) {
+        start_.coordinate = start_coordinate;
+        goal_.coordinate = goal_coordinate;
 
-    AStarSearch(const Node &start, const std::deque<Node> &goal) :
-            start_(start),
-            goal_(goal),
-            open_(),
-            has_found_path(false) {}
+        open_.clear();
+        close_.clear();
 
-    void Initialize() {
-//        start_.cost_g = 0.f;
-//        start_.cost_f = start_.cost_h = CalcHeuristic(start_, goal_);
-        open_.push(start_);
+        setWall({0, 0}, {0b11110001});
+
+        start_.cost_f = CalculateHeuristic(start_);
+        open_.emplace_back(start_);
     }
 
-
-    void SetWallInfo(const Coordinate coordinate, const Wall wall) {}
-
-    bool CalcNextSquare() {
-        if (open_.empty()) { return false; }
-
-        const auto node = open_.top();
-
-        if (!node.wall.has_checked) {
-            next_node_ = node;
-            return true;
-        }
-
-        if (isGoal(node, goal_)) {
-            has_found_path = true;
-            return true;
-        }
-
-//        close_.push(node);
-
-        Node tmp;
-        std::deque<Node> adjacent_node;
-
-        for (auto &m : adjacent_node) {
-            m.cost_h = CalcHeuristic(m, goal_);
-            m.cost_f = m.cost_g + CalcHeuristic(m, goal_);
-
-        }
-
-//        return CalcNextSquare();
+    void setWall(const Coordinate &c, const Wall &w) {
+        maze_[c] = w;
     }
 
-    const Node &getNextSquare() const { return next_node_; }
-
-private:
-    const std::deque<Node> &GetAdjacentNode(const Node &n) const {
-        static Node tmp;
-        static std::deque<Node> ret;
-        static const auto is_on_range = [](const Node &node) -> bool {
-            return (node.coordinate.x >= 0 && node.coordinate.x < kMazeSize &&
-                    node.coordinate.y >= 0 && node.coordinate.y < kMazeSize);
-        };
-        static const auto is_out_range = !is_on_range;
-
-        ret.clear();
-
-        if (n.wall.north) {
-            tmp.coordinate.x = n.coordinate.x;
-            tmp.coordinate.y = n.coordinate.y + 1;
-            if (is_on_range(tmp)) { ret.emplace_back(tmp); }
-        }
-        if (n.wall.east) {
-            tmp.coordinate.x = n.coordinate.x + 1;
-            tmp.coordinate.y = n.coordinate.y;
-            if (is_on_range(tmp)) { ret.emplace_back(tmp); }
-        }
-        if (n.wall.south) {
-            tmp.coordinate.x = n.coordinate.x - 1;
-            tmp.coordinate.y = n.coordinate.y;
-            if (is_on_range(tmp)) { ret.emplace_back(tmp); }
-        }
-        if (n.wall.west) {
-            tmp.coordinate.x = n.coordinate.x - 1;
-            tmp.coordinate.y = n.coordinate.y;
-            if (is_on_range(tmp)) { ret.emplace_back(tmp); }
+    void CalculateNextTargetCoordinate() {
+        if (open_.empty()) {
+            has_no_answer = true;
+            return;
         }
 
-        return ret;
-    }
+        const auto top_node_iterator = open_.begin();
 
-    static float CalcHeuristic(const Node &n, const std::deque<Node> &goal) {
-        return CalcDistance(n, goal.at(0));
-    }
+        if (isGoal(*top_node_iterator)) {
+            has_found_answer = true;
+            return;
+        }
 
-    static constexpr float CalcDistance(const Node &n1, const Node &n2) {
-        return CalcDistance < float > (n1.coordinate, n2.coordinate);
-    }
+        if (!maze_.HasCheckedWall(top_node_iterator->coordinate)) {
+            target_ = top_node_iterator->coordinate;
+            return;
+        }
 
-    template<typename T, typename U>
-    static constexpr T CalcDistance(const U &p1, const U &p2) {
-        return std::sqrt(static_cast<T>((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
-    }
+        close_.emplace_back(*top_node_iterator);
 
-    static bool isGoal(const Node &n, const std::deque<Node> &goal) {
-        for (const auto &g : goal) {
-            if (n.coordinate.x == g.coordinate.x && n.coordinate.y == g.coordinate.y) {
-                return true;
+        std::deque<Node> adj_nodes;
+        for (const auto d : {Maze<>::Direction::NORTH, Maze<>::Direction::EAST,
+                             Maze<>::Direction::SOUTH, Maze<>::Direction::WEST}) {
+            Node n = *top_node_iterator;
+            if (maze_.WallExists(top_node_iterator->coordinate, d)) {
+                switch (d) {
+                    case Maze<>::Direction::NORTH:
+                        ++n.coordinate.y;
+                        break;
+                    case Maze<>::Direction::EAST:
+                        ++n.coordinate.x;
+                        break;
+                    case Maze<>::Direction::SOUTH:
+                        --n.coordinate.y;
+                        break;
+                    case Maze<>::Direction::WEST:
+                        --n.coordinate.x;
+                        break;
+                }
+                if (Maze<>::IsOnRange(n.coordinate)) {
+                    adj_nodes.emplace_back(n);
+                }
             }
         }
-        return false;
+
+        for (const auto &m : adj_nodes) {
+            const auto h = CalculateHeuristic(*top_node_iterator);
+            const auto g = top_node_iterator->cost_f - h;
+            const auto f_tmp = g + CalculateHeuristic(m.coordinate) + 1;
+
+            const auto it_open = std::find_if(
+                    open_.cbegin(),
+                    open_.cend(),
+                    [&m](const auto &x) { return x.coordinate == m.coordinate; }
+            );
+
+            const auto it_close = std::find_if(
+                    close_.cbegin(),
+                    close_.cend(),
+                    [&m](const auto &x) { return x.coordinate == m; }
+            );
+
+            const auto is_in_open = it_open != open_.cend();
+            const auto is_in_close = it_close != close_.cend();
+
+            Node node;
+            node.coordinate = m.coordinate;
+            if (!is_in_open && !is_in_close) {
+                node.cost_f = f_tmp;
+                open_.emplace_back(node);
+            } else if (is_in_open) {
+                if (f_tmp < it_open->cost_f) {
+                    node.cost_f = f_tmp;
+                    open_.emplace_back(node);
+                }
+            } else {
+                if (f_tmp < it_open->cost_f) {
+                    close_.erase(it_close);
+                    node.cost_f = f_tmp;
+                    open_.emplace_back(node);
+                }
+            }
+        }
+
+        std::sort(open_.begin(), open_.end(), Node::Less());
+        
+        CalculateNextTargetCoordinate();
     }
 
-    const Node start_;
-    const std::deque<Node> goal_;
-    Node next_node_;
-    AStarPriorityQueue<Node, std::deque<Node>, Compare> open_;
-    bool has_found_path;
+    const Coordinate &getTargetCoordinate() const {
+        return target_;
+    }
+
+    float CalculateHeuristic(const Node &node) const {
+        return CalculateHeuristic(node.coordinate);
+    }
+
+    float CalculateHeuristic(const Coordinate &c) const {
+        return CalculateDistance(c, goal_.coordinate);
+    }
+
+    template<typename T>
+    static float CalculateDistance(const T &p1, const T &p2) {
+        return std::sqrt(static_cast<float>((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
+    }
+
+    bool isGoal(const Node &node) const {
+        return node.coordinate == goal_.coordinate;
+    }
+
+    Node start_;
+    Node goal_;
+    Coordinate target_;
+    bool has_no_answer = false;
+    bool has_found_answer = false;
+    Nodes open_;
+    Nodes close_;
+    Maze<> maze_;
 };
