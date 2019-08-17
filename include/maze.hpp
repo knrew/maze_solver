@@ -19,6 +19,8 @@ union Wall {
         bool is_known_south:1;
         bool is_known_west:1;
     };
+
+    Wall() : flags(0b00000000) {}
 };
 
 //using T = Wall;
@@ -45,15 +47,24 @@ public:
     }
 
     constexpr bool HasCheckedWall(const T &w) const {
-        return ((w.flags >> 4) == 0b1111);
+        return w.is_known_north && w.is_known_east && w.is_known_south && w.is_known_west;
     }
 
-    constexpr bool WallExists(const Coordinate &c, const Direction d) const {
+    bool WallExists(const Coordinate &c, const Direction d) const {
         return WallExists(get(c.x, c.y), d);
     }
 
-    constexpr bool WallExists(const T &w, const Direction d) const {
-        return ((w.flags >> static_cast<uint8_t>(d)) & 1);
+    bool WallExists(const T &w, const Direction d) const {
+        switch (d) {
+            case Direction::NORTH:
+                return w.north_exists;
+            case Direction::EAST:
+                return w.east_exists;
+            case Direction::SOUTH:
+                return w.south_exists;
+            case Direction::WEST:
+                return w.west_exists;
+        }
     }
 
     typename std::deque<T>::reference operator[](const Coordinate &c) noexcept {

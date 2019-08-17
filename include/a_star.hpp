@@ -10,10 +10,13 @@
 struct Node {
     Coordinate coordinate;
     float cost_f;
+//    Node *parent;
 
     constexpr Node() : coordinate(), cost_f(0.f) {}
 
     constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f) {}
+
+    constexpr Node(const Coordinate &c, const float f, Node *node) : coordinate(c), cost_f(f) {}
 
     struct Less {
         bool operator()(const Node &x, const Node &y) const { return x.cost_f < y.cost_f; }
@@ -31,7 +34,9 @@ public:
         open_.clear();
         close_.clear();
 
-        setWall({0, 0}, {0b11110001});
+        Wall wall;
+        wall.flags = 0b00000000;
+        setWall(start_.coordinate, wall);
 
         start_.cost_f = CalculateHeuristic(start_);
         open_.emplace_back(start_);
@@ -42,33 +47,35 @@ public:
     }
 
     void CalculateNextTargetCoordinate() {
+        std::cout << "----------" << std::endl;
+
         if (open_.empty()) {
             has_no_answer = true;
             return;
         }
 
         const auto top_node_iterator = open_.begin();
-        std::cout << "[AStar](" << top_node_iterator->coordinate.x << ", "
-        << top_node_iterator->coordinate.y << ")" << std::endl;
-
 
         if (isGoal(*top_node_iterator)) {
+            target_ = top_node_iterator->coordinate;
             has_found_answer = true;
             return;
         }
 
+        std::cout << "top_node: "
+                  << "(" << top_node_iterator->coordinate.x << ", " << top_node_iterator->coordinate.y << ") |  "
+                  << std::bitset<8>(maze_[top_node_iterator->coordinate].flags) << std::endl;
         if (!maze_.HasCheckedWall(top_node_iterator->coordinate)) {
             target_ = top_node_iterator->coordinate;
             return;
         }
-
         close_.emplace_back(*top_node_iterator);
 
         std::deque<Node> adj_nodes;
         for (const auto d : {Maze<>::Direction::NORTH, Maze<>::Direction::EAST,
                              Maze<>::Direction::SOUTH, Maze<>::Direction::WEST}) {
             Node n = *top_node_iterator;
-            if (maze_.WallExists(top_node_iterator->coordinate, d)) {
+            if (!maze_.WallExists(top_node_iterator->coordinate, d)) {
                 switch (d) {
                     case Maze<>::Direction::NORTH:
                         ++n.coordinate.y;
@@ -89,7 +96,9 @@ public:
             }
         }
 
+        std::cout << "adj: ";
         for (const auto &m : adj_nodes) {
+            std::cout << "(" << m.coordinate.x << ", " << m.coordinate.y << "), ";
             const auto h = CalculateHeuristic(*top_node_iterator);
             const auto g = top_node_iterator->cost_f - h;
             const auto f_tmp = g + CalculateHeuristic(m.coordinate) + 1;
@@ -127,9 +136,11 @@ public:
                 }
             }
         }
+        std::cout << std::endl;
 
         std::sort(open_.begin(), open_.end(), Node::Less());
 
+        open_.erase(open_.begin());
         CalculateNextTargetCoordinate();
     }
 
