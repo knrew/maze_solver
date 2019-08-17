@@ -48,6 +48,9 @@ public:
         }
 
         const auto top_node_iterator = open_.begin();
+        std::cout << "[AStar](" << top_node_iterator->coordinate.x << ", "
+        << top_node_iterator->coordinate.y << ")" << std::endl;
+
 
         if (isGoal(*top_node_iterator)) {
             has_found_answer = true;
@@ -100,7 +103,7 @@ public:
             const auto it_close = std::find_if(
                     close_.cbegin(),
                     close_.cend(),
-                    [&m](const auto &x) { return x.coordinate == m; }
+                    [&m](const auto &x) { return x.coordinate == m.coordinate; }
             );
 
             const auto is_in_open = it_open != open_.cend();
@@ -126,7 +129,7 @@ public:
         }
 
         std::sort(open_.begin(), open_.end(), Node::Less());
-        
+
         CalculateNextTargetCoordinate();
     }
 
@@ -134,6 +137,15 @@ public:
         return target_;
     }
 
+    bool HasFoundAnswer() const {
+        return has_found_answer;
+    }
+
+    bool HasNoAnswer() const {
+        return has_no_answer;
+    }
+
+private:
     float CalculateHeuristic(const Node &node) const {
         return CalculateHeuristic(node.coordinate);
     }

@@ -7,7 +7,7 @@
 #include <cstdint>
 
 struct Coordinate {
-    int8_t x, y;
+    int x, y;
 
     constexpr Coordinate() : x(0), y(0) {}
 

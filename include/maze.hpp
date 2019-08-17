@@ -21,6 +21,8 @@ union Wall {
     };
 };
 
+//using T = Wall;
+
 template<class T = Wall, uint32_t TMAZE_SIZE = 32>
 class Maze : public std::deque<T> {
 public:
@@ -54,19 +56,19 @@ public:
         return ((w.flags >> static_cast<uint8_t>(d)) & 1);
     }
 
-    constexpr auto operator[](const Coordinate &c) noexcept {
+    typename std::deque<T>::reference operator[](const Coordinate &c) noexcept {
         return get(c.x, c.y);
     }
 
-    constexpr auto operator[](const Coordinate &c) const noexcept {
+    typename std::deque<T>::const_reference operator[](const Coordinate &c) const noexcept {
         return get(c.x, c.y);
     }
 
-    constexpr auto get(const int x, const int y) noexcept {
+    typename std::deque<T>::reference get(const int x, const int y) noexcept {
         return std::deque<T>::operator[](x + y * TMAZE_SIZE);
     }
 
-    constexpr auto get(const int x, const int y) const noexcept {
+    typename std::deque<T>::const_reference get(const int x, const int y) const noexcept {
         return std::deque<T>::operator[](x + y * TMAZE_SIZE);
     }
 
