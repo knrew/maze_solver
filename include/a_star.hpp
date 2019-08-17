@@ -10,13 +10,13 @@
 struct Node {
     Coordinate coordinate;
     float cost_f;
-//    Node *parent;
+    Node *parent;
 
-    constexpr Node() : coordinate(), cost_f(0.f) {}
+    constexpr Node() : coordinate(), cost_f(0.f), parent(nullptr) {}
 
-    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f) {}
+    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f), parent(nullptr) {}
 
-    constexpr Node(const Coordinate &c, const float f, Node *node) : coordinate(c), cost_f(f) {}
+    constexpr Node(const Coordinate &c, const float f, Node *node) : coordinate(c), cost_f(f), parent(node) {}
 
     struct Less {
         bool operator()(const Node &x, const Node &y) const { return x.cost_f < y.cost_f; }
@@ -39,6 +39,7 @@ public:
         setWall(start_.coordinate, wall);
 
         start_.cost_f = CalculateHeuristic(start_);
+        start_.parent = nullptr;
         open_.emplace_back(start_);
     }
 
@@ -58,6 +59,7 @@ public:
 
         if (isGoal(*top_node_iterator)) {
             target_ = top_node_iterator->coordinate;
+            goal_ = (*top_node_iterator);
             has_found_answer = true;
             return;
         }
@@ -122,30 +124,37 @@ public:
             node.coordinate = m.coordinate;
             if (!is_in_open && !is_in_close) {
                 node.cost_f = f_tmp;
+                node.parent = &(*top_node_iterator);
                 open_.emplace_back(node);
             } else if (is_in_open) {
                 if (f_tmp < it_open->cost_f) {
                     node.cost_f = f_tmp;
+                    node.parent = &(*top_node_iterator);
                     open_.emplace_back(node);
                 }
             } else {
-                if (f_tmp < it_open->cost_f) {
+                if (f_tmp < it_close->cost_f) {
                     close_.erase(it_close);
                     node.cost_f = f_tmp;
+                    node.parent = &(*top_node_iterator);
                     open_.emplace_back(node);
                 }
             }
         }
         std::cout << std::endl;
 
+        open_.erase(top_node_iterator);
         std::sort(open_.begin(), open_.end(), Node::Less());
 
-        open_.erase(open_.begin());
         CalculateNextTargetCoordinate();
     }
 
     const Coordinate &getTargetCoordinate() const {
         return target_;
+    }
+
+    const Node &getGoal() const {
+        return goal_;
     }
 
     bool HasFoundAnswer() const {

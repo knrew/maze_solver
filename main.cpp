@@ -49,9 +49,23 @@ int main() {
     std::for_each(route.cbegin(), route.cend(), [](auto &c) { std::cout << "(" << c.x << ", " << c.y << "),"; });
     std::cout << std::endl;
 
-    RouteWriter::write("/home/ryunosuke/micromouse/poyo.csv", route);
+    RouteWriter::write("/home/ryunosuke/micromouse/search_route.csv", route);
 
+    {
+        std::deque<Coordinate> opt;
+        std::cout << "opt" << std::endl;
+        Node n = search.getGoal();
+        while (n.parent != nullptr) {
+            opt.emplace_back(n.coordinate);
+            n = *n.parent;
+        }
+        opt.emplace_back(n.coordinate);
 
+        std::reverse(opt.begin(), opt.end());
+        std::for_each(opt.cbegin(), opt.cend(), [](auto &c) { std::cout << "(" << c.x << ", " << c.y << "),"; });
+        std::cout << std::endl;
+        RouteWriter::write("/home/ryunosuke/micromouse/opt_route.csv", opt);
+    }
 
     return 0;
 }
