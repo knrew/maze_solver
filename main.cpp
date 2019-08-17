@@ -4,7 +4,8 @@
 #include "include/route_writer.hpp"
 
 int main() {
-    std::string file_name = "/home/ryunosuke/micromouse/maze5x5.csv";
+//    std::string file_name = "/home/ryunosuke/micromouse/maze5x5.csv";
+    std::string file_name = "/home/ryunosuke/micromouse/maze8x8.csv";
     Maze<> maze;
     Coordinate start, goal;
     {
@@ -13,8 +14,8 @@ int main() {
         start = reader.getStart();
         goal = reader.getGoal();
 
-//        std::cout << "s : " << (int) reader.getStart().x << ", " << (int) reader.getStart().y << std::endl;
-//        std::cout << "g : " << (int) reader.getGoal().x << ", " << (int) reader.getGoal().y << std::endl;
+        std::cout << "s : " << (int) reader.getStart().x << ", " << (int) reader.getStart().y << std::endl;
+        std::cout << "g : " << (int) reader.getGoal().x << ", " << (int) reader.getGoal().y << std::endl;
         for (int8_t i = 0; i < 5; i++) {
             for (int8_t j = 0; j < 5; j++) {
                 const Coordinate c = {i, j};
@@ -38,6 +39,7 @@ int main() {
 
         search.CalculateNextTargetCoordinate();
         const auto next = search.getTargetCoordinate();
+
         route.emplace_back(next);
 //        std::cout << "(" << next.x << ", " << next.y << ")" << std::endl;
 
@@ -53,13 +55,47 @@ int main() {
 
     {
         std::deque<Coordinate> opt;
+        opt.clear();
         std::cout << "opt" << std::endl;
         Node n = search.getGoal();
-        while (n.parent != nullptr) {
+//        std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
+        while (!(n.parent_coordinate == start)) {
             opt.emplace_back(n.coordinate);
-            n = *n.parent;
+            n = *search.searchNodeWithParents(n.parent_coordinate);
+//            std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
         }
         opt.emplace_back(n.coordinate);
+        opt.emplace_back(start);
+//        while () {
+//            std::cout << n.parent->coordinate.x << ", " << n.parent->coordinate.y << std::endl;
+//            opt.emplace_back(n.coordinate);
+//            n = *n.parent;
+//        }
+//        opt.emplace_back(start);
+
+//        auto func = [&]() {
+//            if (n.parent == nullptr) {
+//                std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
+//            } else {
+//                n = *n.parent;
+//            }
+//
+//            opt.emplace_back(n.coordinate);
+//        };
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        func();
+//        std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
 
         std::reverse(opt.begin(), opt.end());
         std::for_each(opt.cbegin(), opt.cend(), [](auto &c) { std::cout << "(" << c.x << ", " << c.y << "),"; });

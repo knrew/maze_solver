@@ -25,7 +25,7 @@ union Wall {
 
 //using T = Wall;
 
-template<class T = Wall, uint32_t TMAZE_SIZE = 32>
+template<class T = Wall, uint32_t TMAZE_SIZE = 8>
 class Maze : public std::deque<T> {
 public:
     enum class Direction : uint8_t {

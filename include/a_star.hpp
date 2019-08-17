@@ -10,13 +10,13 @@
 struct Node {
     Coordinate coordinate;
     float cost_f;
-    Node *parent;
+    Coordinate parent_coordinate;
 
-    constexpr Node() : coordinate(), cost_f(0.f), parent(nullptr) {}
+    constexpr Node() : coordinate(), cost_f(0.f), parent_coordinate(0, 0) {}
 
-    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f), parent(nullptr) {}
+    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f), parent_coordinate(0, 0) {}
 
-    constexpr Node(const Coordinate &c, const float f, Node *node) : coordinate(c), cost_f(f), parent(node) {}
+//    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f), parent_coordinate() {}
 
     struct Less {
         bool operator()(const Node &x, const Node &y) const { return x.cost_f < y.cost_f; }
@@ -39,7 +39,7 @@ public:
         setWall(start_.coordinate, wall);
 
         start_.cost_f = CalculateHeuristic(start_);
-        start_.parent = nullptr;
+        start_.parent_coordinate = {0, 0};
         open_.emplace_back(start_);
     }
 
@@ -124,19 +124,22 @@ public:
             node.coordinate = m.coordinate;
             if (!is_in_open && !is_in_close) {
                 node.cost_f = f_tmp;
-                node.parent = &(*top_node_iterator);
+//                node.parent = &(*top_node_iterator);
+                node.parent_coordinate = top_node_iterator->coordinate;
                 open_.emplace_back(node);
             } else if (is_in_open) {
                 if (f_tmp < it_open->cost_f) {
                     node.cost_f = f_tmp;
-                    node.parent = &(*top_node_iterator);
+//                    node.parent = &(*top_node_iterator);
+                    node.parent_coordinate = top_node_iterator->coordinate;
                     open_.emplace_back(node);
                 }
             } else {
                 if (f_tmp < it_close->cost_f) {
                     close_.erase(it_close);
                     node.cost_f = f_tmp;
-                    node.parent = &(*top_node_iterator);
+//                    node.parent = &(*top_node_iterator);
+                    node.parent_coordinate = top_node_iterator->coordinate;
                     open_.emplace_back(node);
                 }
             }
@@ -163,6 +166,16 @@ public:
 
     bool HasNoAnswer() const {
         return has_no_answer;
+    }
+
+    auto searchNodeWithParents(const Coordinate &parents_coordinate) {
+        return std::find_if(
+                close_.cbegin(),
+                close_.cend(),
+                [&parents_coordinate](const auto &x) {
+                    return x.coordinate == parents_coordinate;
+                }
+        );
     }
 
 private:
