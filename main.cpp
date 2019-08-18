@@ -6,6 +6,7 @@
 int main() {
 //    std::string file_name = "/home/ryunosuke/micromouse/maze5x5.csv";
     std::string file_name = "/home/ryunosuke/micromouse/maze8x8.csv";
+    
     Maze<> maze;
     Coordinate start, goal;
     {
@@ -41,7 +42,6 @@ int main() {
         const auto next = search.getTargetCoordinate();
 
         route.emplace_back(next);
-//        std::cout << "(" << next.x << ", " << next.y << ")" << std::endl;
 
         auto wall = maze[next];
         wall.is_known_north = wall.is_known_east = wall.is_known_south = wall.is_known_west = true;
@@ -53,55 +53,21 @@ int main() {
 
     RouteWriter::write("/home/ryunosuke/micromouse/search_route.csv", route);
 
-    {
-        std::deque<Coordinate> opt;
-        opt.clear();
-        std::cout << "opt" << std::endl;
-        Node n = search.getGoal();
-//        std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
-        while (!(n.parent_coordinate == start)) {
-            opt.emplace_back(n.coordinate);
-            n = *search.searchNodeWithParents(n.parent_coordinate);
-//            std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
-        }
-        opt.emplace_back(n.coordinate);
-        opt.emplace_back(start);
-//        while () {
-//            std::cout << n.parent->coordinate.x << ", " << n.parent->coordinate.y << std::endl;
-//            opt.emplace_back(n.coordinate);
-//            n = *n.parent;
-//        }
-//        opt.emplace_back(start);
-
-//        auto func = [&]() {
-//            if (n.parent == nullptr) {
-//                std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
-//            } else {
-//                n = *n.parent;
-//            }
-//
-//            opt.emplace_back(n.coordinate);
-//        };
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        func();
-//        std::cout << n.coordinate.x << ", " << n.coordinate.y << std::endl;
-
-        std::reverse(opt.begin(), opt.end());
-        std::for_each(opt.cbegin(), opt.cend(), [](auto &c) { std::cout << "(" << c.x << ", " << c.y << "),"; });
-        std::cout << std::endl;
-        RouteWriter::write("/home/ryunosuke/micromouse/opt_route.csv", opt);
+    std::deque<Coordinate> opt_route;
+    opt_route.clear();
+    std::cout << "opt" << std::endl;
+    Node n = search.getGoal();
+    while (!(n.parent_coordinate == start)) {
+        opt_route.emplace_back(n.coordinate);
+        n = *search.searchNodeWithParents(n.parent_coordinate);
     }
+    opt_route.emplace_back(n.coordinate);
+    opt_route.emplace_back(start);
+
+    std::reverse(opt_route.begin(), opt_route.end());
+    std::for_each(opt_route.cbegin(), opt_route.cend(), [](auto &c) { std::cout << "(" << c.x << ", " << c.y << "),"; });
+    std::cout << std::endl;
+    RouteWriter::write("/home/ryunosuke/micromouse/opt_route.csv", opt_route);
 
     return 0;
 }
