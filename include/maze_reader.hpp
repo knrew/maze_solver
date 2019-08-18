@@ -29,20 +29,19 @@ private:
     };
 
 public:
-    explicit MazeReader(const std::string &file_name, const bool header = true) :
-            file_name_(file_name),
-            header_(header) {
-        get();
+    explicit MazeReader(const auto &file_name, const auto header = true) :
+            file_name_(file_name), header_(header), maze_(), start_(), goal_() {
+        Read();
     }
 
-    Maze<> getMaze() const { return maze_; }
+    auto GetMaze() const { return maze_; }
 
-    Coordinate getStart() const { return start_; }
+    auto GetStart() const { return start_; }
 
-    Coordinate getGoal() const { return goal_; }
+    auto GetGoal() const { return goal_; }
 
 private:
-    void get() {
+    void Read() {
         Coordinate coordinate;
         Wall wall;
 
@@ -54,7 +53,7 @@ private:
         }
 
         while (getline(ifs, line)) {
-            const std::vector<std::string> factor = split(line, ',');
+            const auto factor = Split(line, ',');
             coordinate.x = std::stoi(factor[Index::X]);
             coordinate.y = std::stoi(factor[Index::Y]);
             wall.north_exists = std::stoi(factor[Index::NORTH]);
@@ -70,10 +69,10 @@ private:
         }
     }
 
-    static std::vector<std::string> split(const std::string &input, char delimiter) {
+    static std::deque<std::string> Split(const auto &input, const auto delimiter) {
         std::istringstream stream(input);
         std::string field;
-        std::vector<std::string> result;
+        std::deque<std::string> result;
         while (getline(stream, field, delimiter)) {
             result.push_back(field);
         }

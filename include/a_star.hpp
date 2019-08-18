@@ -18,13 +18,13 @@ struct Node {
 
     constexpr explicit Node(const Coordinate &c) : coordinate(c), parent_coordinate(), cost_f(0.f) {}
 
-    constexpr explicit Node(const Coordinate &c, const float f) : coordinate(c), parent_coordinate(0, 0), cost_f(f) {}
+    constexpr explicit Node(const Coordinate &c, const float f) : coordinate(c), parent_coordinate(), cost_f(f) {}
 
     constexpr explicit Node(const Coordinate &c, const Coordinate &parent_c, const float f) :
             coordinate(c), parent_coordinate(parent_c), cost_f(f) {}
 
     struct LessCost {
-        bool operator()(const Node &x, const Node &y) const { return x.cost_f < y.cost_f; }
+        bool operator()(const auto &x, const auto &y) const { return x.cost_f < y.cost_f; }
     };
 };
 
@@ -45,14 +45,14 @@ public:
 
         Wall wall;
         wall.flags = 0b00000000;
-        setWall(start_.coordinate, wall);
+        SetWall(start_.coordinate, wall);
 
         start_.cost_f = CalculateHeuristic(start_);
         start_.parent_coordinate = {0, 0};
         open_.emplace_back(start_);
     }
 
-    void setWall(const Coordinate &c, const Wall &w) {
+    void SetWall(const Coordinate &c, const Wall &w) {
         maze_[c] = w;
     }
 
@@ -70,7 +70,7 @@ public:
 
         const auto top_node_iterator = open_.begin();
 
-        if (isGoal(*top_node_iterator)) {
+        if (IsGoal(*top_node_iterator)) {
             target_ = top_node_iterator->coordinate;
             goal_ = (*top_node_iterator);
             has_found_answer = true;
@@ -87,10 +87,10 @@ public:
         }
         close_.emplace_back(*top_node_iterator);
 
-        std::deque<Node> adj_nodes;
+        Nodes adjacent_nodes;
         for (const auto d : {Maze<>::Direction::NORTH, Maze<>::Direction::EAST,
                              Maze<>::Direction::SOUTH, Maze<>::Direction::WEST}) {
-            Node n = *top_node_iterator;
+            auto n = *top_node_iterator;
             if (!maze_.WallExists(top_node_iterator->coordinate, d)) {
                 switch (d) {
                     case Maze<>::Direction::NORTH:
@@ -107,7 +107,7 @@ public:
                         break;
                 }
                 if (Maze<>::IsOnRange(n.coordinate)) {
-                    adj_nodes.emplace_back(n);
+                    adjacent_nodes.emplace_back(n);
                 }
             }
         }
@@ -115,7 +115,7 @@ public:
 #if defined(ENABLE_COUT)
         std::cout << "adj: ";
 #endif
-        for (const auto &m : adj_nodes) {
+        for (const auto &m : adjacent_nodes) {
 #if defined(ENABLE_COUT)
             std::cout << m.coordinate << ", ";
 #endif
@@ -159,11 +159,11 @@ public:
         CalculateNextNode();
     }
 
-    const Coordinate &getTargetCoordinate() const {
+    const auto &GetTargetCoordinate() const {
         return target_;
     }
 
-    const Node &getGoalNode() const {
+    const auto &GetGoalNode() const {
         return goal_;
     }
 
@@ -175,9 +175,27 @@ public:
         return has_no_answer;
     }
 
-    auto searchNodeWithParents(const Coordinate &parents_coordinate) const {
-        return std::find_if(close_.cbegin(), close_.cend(),
-                            [&parents_coordinate](const auto &x) { return x.coordinate == parents_coordinate; });
+    const auto &CalculateOptimalRoute() const {
+        const auto find_node_if_parents = [&](const auto &parents_coordinate) {
+            return std::find_if(close_.cbegin(), close_.cend(),
+                                [&parents_coordinate](const auto &x) { return x.coordinate == parents_coordinate; });
+        };
+
+        static std::deque<Coordinate> optimal_route;
+        optimal_route.clear();
+
+        if (!has_found_answer) { return optimal_route; }
+
+        Node n = GetGoalNode();
+        while (!(n.parent_coordinate == start_.coordinate)) {
+            optimal_route.emplace_back(n.coordinate);
+            n = *find_node_if_parents(n.parent_coordinate);
+        }
+        optimal_route.emplace_back(n.coordinate);
+        optimal_route.emplace_back(start_.coordinate);
+        std::reverse(optimal_route.begin(), optimal_route.end());
+
+        return optimal_route;
     }
 
 private:
@@ -189,20 +207,19 @@ private:
         return CalculateDistance(c, goal_.coordinate);
     }
 
-    template<typename T>
-    static float CalculateDistance(const T &p1, const T &p2) {
+    static float CalculateDistance(const auto &p1, const auto &p2) {
         return std::sqrt(static_cast<float>((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
     }
 
-    bool isGoal(const Node &node) const {
+    bool IsGoal(const auto &node) const {
         return node.coordinate == goal_.coordinate;
     }
 
     Node start_;
     Node goal_;
     Coordinate target_;
-    bool has_no_answer = false;
-    bool has_found_answer = false;
+    bool has_no_answer;
+    bool has_found_answer;
     Nodes open_;
     Nodes close_;
     Maze<> maze_;

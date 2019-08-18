@@ -11,7 +11,7 @@
 
 class RouteWriter {
 public:
-    static void write(const std::string &file_name, const std::deque<Coordinate> &route) {
+    static void Write(const auto &file_name, const auto &route) {
         std::ofstream output(file_name);
         output << "x,y" << std::endl;
         std::for_each(route.cbegin(), route.cend(),

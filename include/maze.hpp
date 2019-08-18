@@ -41,7 +41,7 @@ public:
     }
 
     constexpr bool HasCheckedWall(const Coordinate &c) const {
-        return HasCheckedWall(get(c.x, c.y));
+        return HasCheckedWall(Get(c.x, c.y));
     }
 
     constexpr bool HasCheckedWall(const T &w) const {
@@ -49,7 +49,7 @@ public:
     }
 
     bool WallExists(const Coordinate &c, const Direction d) const {
-        return WallExists(get(c.x, c.y), d);
+        return WallExists(Get(c.x, c.y), d);
     }
 
     bool WallExists(const T &w, const Direction d) const {
@@ -66,18 +66,18 @@ public:
     }
 
     typename std::deque<T>::reference operator[](const Coordinate &c) noexcept {
-        return get(c.x, c.y);
+        return Get(c.x, c.y);
     }
 
     typename std::deque<T>::const_reference operator[](const Coordinate &c) const noexcept {
-        return get(c.x, c.y);
+        return Get(c.x, c.y);
     }
 
-    typename std::deque<T>::reference get(const int x, const int y) noexcept {
+    typename std::deque<T>::reference Get(const int x, const int y) noexcept {
         return std::deque<T>::operator[](x + y * TMAZE_SIZE);
     }
 
-    typename std::deque<T>::const_reference get(const int x, const int y) const noexcept {
+    typename std::deque<T>::const_reference Get(const int x, const int y) const noexcept {
         return std::deque<T>::operator[](x + y * TMAZE_SIZE);
     }
 
