@@ -3,71 +3,69 @@
 #include "include/a_star.hpp"
 #include "include/route_writer.hpp"
 
-int main() {
-//    std::string file_name = "/home/ryunosuke/micromouse/maze5x5.csv";
-    std::string file_name = "/home/ryunosuke/micromouse/maze8x8.csv";
-    
-    Maze<> maze;
-    Coordinate start, goal;
-    {
-        MazeReader reader(file_name, true);
-        maze = reader.getMaze();
-        start = reader.getStart();
-        goal = reader.getGoal();
+int main(const int argc, const char *const *const argv) {
+    const std::string file_name = "/home/ryunosuke/micromouse/maze8x8.csv";
+    const std::string search_route_file_name = "/home/ryunosuke/micromouse/search_route.csv";
+    const std::string opt_route_file_name = "/home/ryunosuke/micromouse/optimal_route.csv";
 
-        std::cout << "s : " << (int) reader.getStart().x << ", " << (int) reader.getStart().y << std::endl;
-        std::cout << "g : " << (int) reader.getGoal().x << ", " << (int) reader.getGoal().y << std::endl;
-        for (int8_t i = 0; i < 5; i++) {
-            for (int8_t j = 0; j < 5; j++) {
-                const Coordinate c = {i, j};
-                const auto w = maze[c];
-//                std::cout << std::bitset<8>(w.flags) << std::endl;
-            }
-        }
+    Maze<> maze;
+    Coordinate start_coordinate, goal_coordinate;
+    {
+        const MazeReader reader(file_name, true);
+        maze = reader.getMaze();
+        start_coordinate = reader.getStart();
+        goal_coordinate = reader.getGoal();
+        std::cout << "start: " << start_coordinate << std::endl;
+        std::cout << "goal: " << goal_coordinate << std::endl;
     }
 
-    std::deque<Coordinate> route;
-    AStarSearch search(start, goal);
-    while (1) {
-        if (search.HasFoundAnswer()) {
-            std::cout << "found!" << std::endl;
-            break;
-        }
-        if (search.HasNoAnswer()) {
-            std::cout << "No Answer." << std::endl;
+    std::deque<Coordinate> search_route;
+    AStarSearch a_star(start_coordinate, goal_coordinate);
+    while (true) {
+        if (a_star.HasFoundAnswer()) {
+//            std::cout << "optimal route has found!" << std::endl;
             break;
         }
 
-        search.CalculateNextTargetCoordinate();
-        const auto next = search.getTargetCoordinate();
+        if (a_star.HasNoAnswer()) {
+            std::cout << "This maze cannot be solved." << std::endl;
+            break;
+        }
 
-        route.emplace_back(next);
+        a_star.CalculateNextNode();
+        const auto next = a_star.getTargetCoordinate();
+
+        search_route.emplace_back(next);
 
         auto wall = maze[next];
         wall.is_known_north = wall.is_known_east = wall.is_known_south = wall.is_known_west = true;
-        search.setWall(next, wall);
+        a_star.setWall(next, wall);
     }
 
-    std::for_each(route.cbegin(), route.cend(), [](auto &c) { std::cout << "(" << c.x << ", " << c.y << "),"; });
-    std::cout << std::endl;
+//    std::cout << "search route  | ";
+//    std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });
+//    std::cout << std::endl;
 
-    RouteWriter::write("/home/ryunosuke/micromouse/search_route.csv", route);
+    RouteWriter::write(search_route_file_name, search_route);
 
-    std::deque<Coordinate> opt_route;
-    opt_route.clear();
-    std::cout << "opt" << std::endl;
-    Node n = search.getGoal();
-    while (!(n.parent_coordinate == start)) {
-        opt_route.emplace_back(n.coordinate);
-        n = *search.searchNodeWithParents(n.parent_coordinate);
+    std::deque<Coordinate> optimal_route;
+    optimal_route.clear();
+
+    {
+        Node n = a_star.getGoalNode();
+        while (!(n.parent_coordinate == start_coordinate)) {
+            optimal_route.emplace_back(n.coordinate);
+            n = *a_star.searchNodeWithParents(n.parent_coordinate);
+        }
+        optimal_route.emplace_back(n.coordinate);
+        optimal_route.emplace_back(start_coordinate);
+        std::reverse(optimal_route.begin(), optimal_route.end());
     }
-    opt_route.emplace_back(n.coordinate);
-    opt_route.emplace_back(start);
 
-    std::reverse(opt_route.begin(), opt_route.end());
-    std::for_each(opt_route.cbegin(), opt_route.cend(), [](auto &c) { std::cout << "(" << c.x << ", " << c.y << "),"; });
+    std::cout << "optimal route | ";
+    std::for_each(optimal_route.cbegin(), optimal_route.cend(), [](const auto &c) { std::cout << c << ","; });
     std::cout << std::endl;
-    RouteWriter::write("/home/ryunosuke/micromouse/opt_route.csv", opt_route);
+    RouteWriter::write(opt_route_file_name, optimal_route);
 
     return 0;
 }

@@ -7,18 +7,23 @@
 #include <cmath>
 #include <algorithm>
 
+//#define ENABLE_COUT
+
 struct Node {
     Coordinate coordinate;
-    float cost_f;
     Coordinate parent_coordinate;
+    float cost_f;
 
-    constexpr Node() : coordinate(), cost_f(0.f), parent_coordinate(0, 0) {}
+    constexpr Node() : coordinate(), parent_coordinate(), cost_f(0.f) {}
 
-    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f), parent_coordinate(0, 0) {}
+    constexpr explicit Node(const Coordinate &c) : coordinate(c), parent_coordinate(), cost_f(0.f) {}
 
-//    constexpr Node(const Coordinate &c, const float f) : coordinate(c), cost_f(f), parent_coordinate() {}
+    constexpr explicit Node(const Coordinate &c, const float f) : coordinate(c), parent_coordinate(0, 0), cost_f(f) {}
 
-    struct Less {
+    constexpr explicit Node(const Coordinate &c, const Coordinate &parent_c, const float f) :
+            coordinate(c), parent_coordinate(parent_c), cost_f(f) {}
+
+    struct LessCost {
         bool operator()(const Node &x, const Node &y) const { return x.cost_f < y.cost_f; }
     };
 };
@@ -27,7 +32,11 @@ using Nodes = std::deque<Node>;
 
 class AStarSearch {
 public:
-    AStarSearch(const Coordinate &start_coordinate, const Coordinate &goal_coordinate) {
+    AStarSearch(const Coordinate &start_coordinate, const Coordinate &goal_coordinate)
+            : start_(), goal_(), target_(), has_no_answer(false), has_found_answer(false), open_(), close_(), maze_() {
+#if defined(ENABLE_COUT)
+        std::cout << "AStarSearch start." << std::endl;
+#endif
         start_.coordinate = start_coordinate;
         goal_.coordinate = goal_coordinate;
 
@@ -47,8 +56,12 @@ public:
         maze_[c] = w;
     }
 
-    void CalculateNextTargetCoordinate() {
+    void CalculateNextNode() {
+#if defined(ENABLE_COUT)
         std::cout << "----------" << std::endl;
+#endif
+
+        if (has_found_answer) { return; }
 
         if (open_.empty()) {
             has_no_answer = true;
@@ -64,9 +77,10 @@ public:
             return;
         }
 
-        std::cout << "top_node: "
-                  << "(" << top_node_iterator->coordinate.x << ", " << top_node_iterator->coordinate.y << ") |  "
+#if defined(ENABLE_COUT)
+        std::cout << "top_node: " << top_node_iterator->coordinate << " |  "
                   << std::bitset<8>(maze_[top_node_iterator->coordinate].flags) << std::endl;
+#endif
         if (!maze_.HasCheckedWall(top_node_iterator->coordinate)) {
             target_ = top_node_iterator->coordinate;
             return;
@@ -98,65 +112,58 @@ public:
             }
         }
 
+#if defined(ENABLE_COUT)
         std::cout << "adj: ";
+#endif
         for (const auto &m : adj_nodes) {
-            std::cout << "(" << m.coordinate.x << ", " << m.coordinate.y << "), ";
+#if defined(ENABLE_COUT)
+            std::cout << m.coordinate << ", ";
+#endif
             const auto h = CalculateHeuristic(*top_node_iterator);
             const auto g = top_node_iterator->cost_f - h;
             const auto f_tmp = g + CalculateHeuristic(m.coordinate) + 1;
 
-            const auto it_open = std::find_if(
-                    open_.cbegin(),
-                    open_.cend(),
-                    [&m](const auto &x) { return x.coordinate == m.coordinate; }
-            );
+            const auto iterator_open = std::find_if(open_.cbegin(), open_.cend(),
+                                                    [&m](const auto &x) { return x.coordinate == m.coordinate; });
 
-            const auto it_close = std::find_if(
-                    close_.cbegin(),
-                    close_.cend(),
-                    [&m](const auto &x) { return x.coordinate == m.coordinate; }
-            );
+            const auto iterator_close = std::find_if(close_.cbegin(), close_.cend(),
+                                                     [&m](const auto &x) { return x.coordinate == m.coordinate; });
 
-            const auto is_in_open = it_open != open_.cend();
-            const auto is_in_close = it_close != close_.cend();
+            const auto is_in_open = iterator_open != open_.cend();
+            const auto is_in_close = iterator_close != close_.cend();
 
             Node node;
             node.coordinate = m.coordinate;
             if (!is_in_open && !is_in_close) {
                 node.cost_f = f_tmp;
-//                node.parent = &(*top_node_iterator);
                 node.parent_coordinate = top_node_iterator->coordinate;
                 open_.emplace_back(node);
-            } else if (is_in_open) {
-                if (f_tmp < it_open->cost_f) {
-                    node.cost_f = f_tmp;
-//                    node.parent = &(*top_node_iterator);
-                    node.parent_coordinate = top_node_iterator->coordinate;
-                    open_.emplace_back(node);
-                }
-            } else {
-                if (f_tmp < it_close->cost_f) {
-                    close_.erase(it_close);
-                    node.cost_f = f_tmp;
-//                    node.parent = &(*top_node_iterator);
-                    node.parent_coordinate = top_node_iterator->coordinate;
-                    open_.emplace_back(node);
-                }
-            }
+            } else if (is_in_open && f_tmp < iterator_open->cost_f) {
+                node.cost_f = f_tmp;
+                node.parent_coordinate = top_node_iterator->coordinate;
+                open_.emplace_back(node);
+            } else if (is_in_close && f_tmp < iterator_close->cost_f) {
+                close_.erase(iterator_close);
+                node.cost_f = f_tmp;
+                node.parent_coordinate = top_node_iterator->coordinate;
+                open_.emplace_back(node);
+            } else {}
         }
+#if defined(ENABLE_COUT)
         std::cout << std::endl;
+#endif
 
         open_.erase(top_node_iterator);
-        std::sort(open_.begin(), open_.end(), Node::Less());
+        std::sort(open_.begin(), open_.end(), Node::LessCost());
 
-        CalculateNextTargetCoordinate();
+        CalculateNextNode();
     }
 
     const Coordinate &getTargetCoordinate() const {
         return target_;
     }
 
-    const Node &getGoal() const {
+    const Node &getGoalNode() const {
         return goal_;
     }
 
@@ -168,14 +175,9 @@ public:
         return has_no_answer;
     }
 
-    auto searchNodeWithParents(const Coordinate &parents_coordinate) {
-        return std::find_if(
-                close_.cbegin(),
-                close_.cend(),
-                [&parents_coordinate](const auto &x) {
-                    return x.coordinate == parents_coordinate;
-                }
-        );
+    auto searchNodeWithParents(const Coordinate &parents_coordinate) const {
+        return std::find_if(close_.cbegin(), close_.cend(),
+                            [&parents_coordinate](const auto &x) { return x.coordinate == parents_coordinate; });
     }
 
 private:

@@ -32,7 +32,7 @@ public:
     explicit MazeReader(const std::string &file_name, const bool header = true) :
             file_name_(file_name),
             header_(header) {
-        solve();
+        get();
     }
 
     Maze<> getMaze() const { return maze_; }
@@ -42,7 +42,7 @@ public:
     Coordinate getGoal() const { return goal_; }
 
 private:
-    void solve() {
+    void get() {
         Coordinate coordinate;
         Wall wall;
 
@@ -51,11 +51,10 @@ private:
 
         if (header_) {
             getline(ifs, line);
-//            std::vector<std::string> key = split(line, ',');
         }
 
         while (getline(ifs, line)) {
-            std::vector<std::string> factor = split(line, ',');
+            const std::vector<std::string> factor = split(line, ',');
             coordinate.x = std::stoi(factor[Index::X]);
             coordinate.y = std::stoi(factor[Index::Y]);
             wall.north_exists = std::stoi(factor[Index::NORTH]);
@@ -71,7 +70,7 @@ private:
         }
     }
 
-    std::vector<std::string> split(const std::string &input, char delimiter) {
+    static std::vector<std::string> split(const std::string &input, char delimiter) {
         std::istringstream stream(input);
         std::string field;
         std::vector<std::string> result;
