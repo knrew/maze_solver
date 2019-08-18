@@ -1,25 +1,49 @@
 #include <bitset>
+#include <cstdlib>
 #include "include/maze_reader.hpp"
 #include "include/a_star.hpp"
 #include "include/route_writer.hpp"
 
 int main(const int argc, const char *const *const argv) {
-    const std::string file_name = "/home/ryunosuke/micromouse/maze8x8.csv";
-    const std::string search_route_file_name = "/home/ryunosuke/micromouse/search_route.csv";
-    const std::string opt_route_file_name = "/home/ryunosuke/micromouse/optimal_route.csv";
+    const std::vector<std::string> args(argv, argv + argc);
+
+    const auto maze_data_file_name = [&]() {
+        try {
+            return args.at(1);
+        } catch (std::exception &e) {
+            return std::string(getenv("HOME")) + "/micromouse/maze8x8.csv";
+        }
+    }();
+
+    const auto search_route_file_name = [&]() {
+        try {
+            return args.at(2);
+        } catch (std::exception &e) {
+            return std::string(getenv("HOME")) + "/micromouse/search_route.csv";
+        }
+    }();
+
+    const auto opt_route_file_name = [&]() {
+        try {
+            return args.at(3);
+        } catch (std::exception &e) {
+            return std::string(getenv("HOME")) + "/micromouse/optimal_route.csv";
+        }
+    }();
 
     Maze<> maze;
     Coordinate start_coordinate, goal_coordinate;
     {
-        MazeReader reader(file_name, true);
+        MazeReader reader(maze_data_file_name, true);
         maze = reader.GetMaze();
         start_coordinate = reader.GetStart();
         goal_coordinate = reader.GetGoal();
-        std::cout << "start: " << start_coordinate << std::endl;
-        std::cout << "goal: " << goal_coordinate << std::endl;
     }
 
-    std::deque<Coordinate> search_route;
+    std::cout << "start: " << start_coordinate << std::endl;
+    std::cout << "goal: " << goal_coordinate << std::endl;
+
+    AStarSearch::Path search_route;
     AStarSearch a_star(start_coordinate, goal_coordinate);
     while (true) {
         if (a_star.HasFoundAnswer()) {

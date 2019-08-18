@@ -32,8 +32,11 @@ using Nodes = std::deque<Node>;
 
 class AStarSearch {
 public:
+    using Path = std::deque<Coordinate>;
+
     AStarSearch(const Coordinate &start_coordinate, const Coordinate &goal_coordinate)
-            : start_(), goal_(), target_(), has_no_answer(false), has_found_answer(false), open_(), close_(), maze_() {
+            : start_(), goal_(), target_(), has_no_answer_(false), has_found_answer_(false), open_(), close_(),
+              maze_() {
 #if defined(ENABLE_COUT)
         std::cout << "AStarSearch start." << std::endl;
 #endif
@@ -61,10 +64,10 @@ public:
         std::cout << "----------" << std::endl;
 #endif
 
-        if (has_found_answer) { return; }
+        if (has_found_answer_) { return; }
 
         if (open_.empty()) {
-            has_no_answer = true;
+            has_no_answer_ = true;
             return;
         }
 
@@ -73,7 +76,7 @@ public:
         if (IsGoal(*top_node_iterator)) {
             target_ = top_node_iterator->coordinate;
             goal_ = (*top_node_iterator);
-            has_found_answer = true;
+            has_found_answer_ = true;
             return;
         }
 
@@ -88,21 +91,21 @@ public:
         close_.emplace_back(*top_node_iterator);
 
         Nodes adjacent_nodes;
-        for (const auto d : {Maze<>::Direction::NORTH, Maze<>::Direction::EAST,
-                             Maze<>::Direction::SOUTH, Maze<>::Direction::WEST}) {
+        for (const auto d : {Maze<>::Direction::kNorth, Maze<>::Direction::kEast,
+                             Maze<>::Direction::kSouth, Maze<>::Direction::kWest}) {
             auto n = *top_node_iterator;
             if (!maze_.WallExists(top_node_iterator->coordinate, d)) {
                 switch (d) {
-                    case Maze<>::Direction::NORTH:
+                    case Maze<>::Direction::kNorth:
                         ++n.coordinate.y;
                         break;
-                    case Maze<>::Direction::EAST:
+                    case Maze<>::Direction::kEast:
                         ++n.coordinate.x;
                         break;
-                    case Maze<>::Direction::SOUTH:
+                    case Maze<>::Direction::kSouth:
                         --n.coordinate.y;
                         break;
-                    case Maze<>::Direction::WEST:
+                    case Maze<>::Direction::kWest:
                         --n.coordinate.x;
                         break;
                 }
@@ -168,33 +171,30 @@ public:
     }
 
     bool HasFoundAnswer() const {
-        return has_found_answer;
+        return has_found_answer_;
     }
 
     bool HasNoAnswer() const {
-        return has_no_answer;
+        return has_no_answer_;
     }
 
     const auto &CalculateOptimalRoute() const {
-        const auto find_node_if_parents = [&](const auto &parents_coordinate) {
+        const auto find_node_if_parent = [&](const auto &parent_coordinate) {
             return std::find_if(close_.cbegin(), close_.cend(),
-                                [&parents_coordinate](const auto &x) { return x.coordinate == parents_coordinate; });
+                                [&parent_coordinate](const auto &x) { return x.coordinate == parent_coordinate; });
         };
 
-        static std::deque<Coordinate> optimal_route;
+        static Path optimal_route;
         optimal_route.clear();
 
-        if (!has_found_answer) { return optimal_route; }
+        if (!has_found_answer_) { return optimal_route; }
 
         Node n = GetGoalNode();
-        while (!(n.parent_coordinate == start_.coordinate)) {
-            optimal_route.emplace_back(n.coordinate);
-            n = *find_node_if_parents(n.parent_coordinate);
+        while (n.coordinate != start_.coordinate) {
+            optimal_route.emplace_front(n.coordinate);
+            n = *find_node_if_parent(n.parent_coordinate);
         }
-        optimal_route.emplace_back(n.coordinate);
-        optimal_route.emplace_back(start_.coordinate);
-        std::reverse(optimal_route.begin(), optimal_route.end());
-
+        optimal_route.emplace_front(start_.coordinate);
         return optimal_route;
     }
 
@@ -218,8 +218,8 @@ private:
     Node start_;
     Node goal_;
     Coordinate target_;
-    bool has_no_answer;
-    bool has_found_answer;
+    bool has_no_answer_;
+    bool has_found_answer_;
     Nodes open_;
     Nodes close_;
     Maze<> maze_;

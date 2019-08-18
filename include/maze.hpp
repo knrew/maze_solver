@@ -23,17 +23,17 @@ union Wall {
     Wall() : flags(0b00000000) {}
 };
 
-template<class T = Wall, uint32_t TMAZE_SIZE = 16>
+template<class T = Wall, uint32_t kMazeSize = 16>
 class Maze : public std::deque<T> {
 public:
     enum class Direction : uint8_t {
-        NORTH, EAST, SOUTH, WEST,
+        kNorth, kEast, kSouth, kWest,
     };
 
-    constexpr Maze() : std::deque<T>(TMAZE_SIZE * TMAZE_SIZE) {}
+    constexpr Maze() : std::deque<T>(kMazeSize * kMazeSize) {}
 
     static constexpr bool IsOnRange(const Coordinate &c) {
-        return c.x >= 0 && c.x < TMAZE_SIZE && c.y >= 0 && c.y < TMAZE_SIZE;
+        return c.x >= 0 && c.x < kMazeSize && c.y >= 0 && c.y < kMazeSize;
     }
 
     static constexpr bool IsOutOfRange(const Coordinate &c) {
@@ -54,13 +54,13 @@ public:
 
     bool WallExists(const T &w, const Direction d) const {
         switch (d) {
-            case Direction::NORTH:
+            case Direction::kNorth:
                 return w.north_exists;
-            case Direction::EAST:
+            case Direction::kEast:
                 return w.east_exists;
-            case Direction::SOUTH:
+            case Direction::kSouth:
                 return w.south_exists;
-            case Direction::WEST:
+            case Direction::kWest:
                 return w.west_exists;
         }
     }
@@ -74,11 +74,11 @@ public:
     }
 
     typename std::deque<T>::reference Get(const int x, const int y) noexcept {
-        return std::deque<T>::operator[](x + y * TMAZE_SIZE);
+        return std::deque<T>::operator[](x + y * kMazeSize);
     }
 
     typename std::deque<T>::const_reference Get(const int x, const int y) const noexcept {
-        return std::deque<T>::operator[](x + y * TMAZE_SIZE);
+        return std::deque<T>::operator[](x + y * kMazeSize);
     }
 
 //    reference at(const Coordinate &c) {

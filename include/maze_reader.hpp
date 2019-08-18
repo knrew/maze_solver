@@ -16,20 +16,20 @@
 class MazeReader {
 private:
     enum Index {
-        X = 0,
-        Y = 1,
-        NORTH = 2,
-        EAST = 3,
-        SOUTH = 4,
-        WEST = 5,
-        START_X = 6,
-        START_Y = 7,
-        GOAL_X = 8,
-        GOAL_Y = 9
+        kX = 0,
+        kY = 1,
+        kNorth = 2,
+        kEast = 3,
+        kSouth = 4,
+        kWest = 5,
+        kStartX = 6,
+        kStartY = 7,
+        kGoalX = 8,
+        kGoalY = 9
     };
 
 public:
-    explicit MazeReader(const auto &file_name, const auto header = true) :
+    explicit MazeReader(const std::string &file_name, const bool header = true) :
             file_name_(file_name), header_(header), maze_(), start_(), goal_() {
         Read();
     }
@@ -54,16 +54,16 @@ private:
 
         while (getline(ifs, line)) {
             const auto factor = Split(line, ',');
-            coordinate.x = std::stoi(factor[Index::X]);
-            coordinate.y = std::stoi(factor[Index::Y]);
-            wall.north_exists = std::stoi(factor[Index::NORTH]);
-            wall.east_exists = std::stoi(factor[Index::EAST]);
-            wall.south_exists = std::stoi(factor[Index::SOUTH]);
-            wall.west_exists = std::stoi(factor[Index::WEST]);
-            start_.x = std::stoi(factor[Index::START_X]);
-            start_.y = std::stoi(factor[Index::START_Y]);
-            goal_.x = std::stoi(factor[Index::GOAL_X]);
-            goal_.y = std::stoi(factor[Index::GOAL_Y]);
+            coordinate.x = std::stoi(factor[Index::kX]);
+            coordinate.y = std::stoi(factor[Index::kY]);
+            wall.north_exists = std::stoi(factor[Index::kNorth]);
+            wall.east_exists = std::stoi(factor[Index::kEast]);
+            wall.south_exists = std::stoi(factor[Index::kSouth]);
+            wall.west_exists = std::stoi(factor[Index::kWest]);
+            start_.x = std::stoi(factor[Index::kStartX]);
+            start_.y = std::stoi(factor[Index::kStartY]);
+            goal_.x = std::stoi(factor[Index::kGoalX]);
+            goal_.y = std::stoi(factor[Index::kGoalY]);
 
             maze_[coordinate] = wall;
         }
