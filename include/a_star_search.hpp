@@ -9,7 +9,7 @@
 #include <cmath>
 #include <algorithm>
 
-#define ENABLE_COUT
+//#define ENABLE_COUT
 
 template<std::size_t kMazeSize>
 class AStarSearch {
@@ -28,8 +28,6 @@ public:
 
         nodes_[start_].setAll(start_, start_, CalculateHeuristic(start_), AStarNode::State::kOpen);
         open_.emplace(nodes_[start_]);
-
-        std::cout << nodes_[start_].cost_f << ", " << open_.top().cost_f << std::endl;
 
         Wall wall;
         wall.flags = 0b00000000;
