@@ -30,5 +30,13 @@ public:
     typename std::deque<T>::const_reference operator[](const Coordinate &c) const {
         return std::deque<T>::operator[](CoordinateHash<kMazeSize>()(c));
     }
+
+    typename std::deque<T>::reference operator[](const int index) {
+        return std::deque<T>::operator[](index);
+    }
+
+    typename std::deque<T>::const_reference operator[](const int index) const {
+        return std::deque<T>::operator[](index);
+    }
 };
 

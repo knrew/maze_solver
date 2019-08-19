@@ -13,38 +13,38 @@
 template<int kMazeSize>
 class AStarPriorityQueue {
 public:
-    using NodeType = AStarNode;
-    using NodeContainerType = AStarNodeContainer;
-    using NodeContainerPtr = std::shared_ptr<NodeContainerType>;
-    using NodeContainerConstPtr = std::shared_ptr<const NodeContainerType>;
+    using Node = AStarNode;
+    using NodeContainer = Maze<Node, kMazeSize>;
+    using NodeContainerPtr = NodeContainer *;
+    using NodeContainerConstPtr = NodeContainerPtr const;
 
-    using IDContainerType = std::deque<int>;
-    using CompareFunctionType = std::function<bool(const int &, const int &)>;
+    using IDContainer = std::deque<int>;
+    using CompareFunction = std::function<bool(const int &, const int &)>;
 
-    explicit AStarPriorityQueue(NodeContainerType *x) :
-            ids(),
-            nodes(x),
-            comp([&](const int &a, const int &b) { return NodeType::LessCost()((*nodes)[a], (*nodes)[b]); }) {};
+    explicit AStarPriorityQueue(NodeContainer &nodes) :
+            ids_(),
+            nodes_(&nodes),
+            comp_([&](const int &a, const int &b) { return Node::LessCost()((*nodes_)[a], (*nodes_)[b]); }) {};
 
-    bool empty() const { return ids.empty(); }
+    bool empty() const { return ids_.empty(); }
 
-    NodeContainerType::size_type size() const { return ids.size(); }
+    typename NodeContainer::size_type size() const { return ids_.size(); }
 
-    NodeContainerType::const_reference top() const {
+    typename NodeContainer::const_reference top() const {
         __glibcxx_requires_nonempty();
-        return (*nodes)[ids.front()];
+        return (*nodes_)[ids_.front()];
     }
 
-    void push(const NodeContainerType::value_type &x) {
+    void push(const typename NodeContainer::value_type &x) {
         const auto id = CoordinateHash<kMazeSize>()(x.id);
-        ids.push_back(id);
-        std::push_heap(ids.begin(), ids.end(), comp);
+        ids_.push_back(id);
+        std::push_heap(ids_.begin(), ids_.end(), comp_);
     }
 
-    void push(NodeContainerType::value_type &&x) {
+    void push(typename NodeContainer::value_type &&x) {
         const auto id = CoordinateHash<kMazeSize>()(x.id);
-        ids.push_back(id);
-        std::push_heap(ids.begin(), ids.end(), comp);
+        ids_.push_back(id);
+        std::push_heap(ids_.begin(), ids_.end(), comp_);
     }
 
 //    template<class... Args>
@@ -52,20 +52,19 @@ public:
 //        push(std::forward<Args>(args)...);
 //    }
 
-    void emplace(const NodeContainerType::value_type &x) {
+    void emplace(const typename NodeContainer::value_type &x) {
         const auto id = CoordinateHash<kMazeSize>()(x.id);
-        ids.push_back(id);
-        std::push_heap(ids.begin(), ids.end(), comp);
+        ids_.push_back(id);
+        std::push_heap(ids_.begin(), ids_.end(), comp_);
     }
 
     void pop() {
-        pop_heap(ids.begin(), ids.end(), comp);
-        ids.pop_back();
+        pop_heap(ids_.begin(), ids_.end(), comp_);
+        ids_.pop_back();
     }
 
 protected:
-    IDContainerType ids;
-//    const NodeContainerConstPtr nodes;
-    NodeContainerType *nodes;
-    const CompareFunctionType comp;
+    IDContainer ids_;
+    const NodeContainerConstPtr nodes_;
+    const CompareFunction comp_;
 };

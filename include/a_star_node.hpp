@@ -31,5 +31,3 @@ struct AStarNode {
         bool operator()(const AStarNode &x, const AStarNode &y) const { return x.cost_f > y.cost_f; }
     };
 };
-
-using AStarNodeContainer = std::deque<AStarNode>;

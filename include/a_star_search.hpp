@@ -14,21 +14,20 @@
 template<int kMazeSize>
 class AStarSearch {
 public:
+//    std::shared_ptr<Maze<AStarNode,>> p;
     explicit AStarSearch(const Coordinate &start, const Coordinate &goal) :
             start_(start),
             goal_(goal),
             maze_(),
             nodes_(),
-            open_(&nodes_),
+            open_(nodes_),
             target_(),
             has_no_answer_(false),
             has_found_answer_(false) {
 
         nodes_[goal_].id = goal_;
 
-        nodes_[start_].id = nodes_[start].parent_id = start_;
-        nodes_[start_].cost_f = CalculateHeuristic(start_);
-        nodes_[start_].state = AStarNode::State::kOpen;
+        nodes_[start_].setAll(start_, start_, CalculateHeuristic(start_), AStarNode::State::kOpen);
         open_.emplace(nodes_[start_]);
 
         std::cout << nodes_[start_].cost_f << ", " << open_.top().cost_f << std::endl;
@@ -68,7 +67,7 @@ public:
             return;
         }
 
-        AStarNodeContainer adjacent_nodes;
+        std::deque<AStarNode> adjacent_nodes;
 
         for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                              Wall::Direction::kSouth, Wall::Direction::kWest}) {
