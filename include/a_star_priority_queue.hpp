@@ -14,17 +14,12 @@ template<int kMazeSize>
 class AStarPriorityQueue {
 public:
     using NodeType = AStarNode;
-    using NodeContainerType = AStarNodeContainerType;
+    using NodeContainerType = AStarNodeContainer;
     using NodeContainerPtr = std::shared_ptr<NodeContainerType>;
     using NodeContainerConstPtr = std::shared_ptr<const NodeContainerType>;
 
     using IDContainerType = std::deque<int>;
     using CompareFunctionType = std::function<bool(const int &, const int &)>;
-
-//    AStarContainer() :
-//            ids(),
-//            nodes(std::make_shared<AStarNodes>(new container_type())),
-//            comp([&](const int &a, const int &b) { return AStarNode::LessCost()((*nodes)[a], (*nodes)[b]); }) {};
 
     explicit AStarPriorityQueue(NodeContainerType *x) :
             ids(),
@@ -41,14 +36,12 @@ public:
     }
 
     void push(const NodeContainerType::value_type &x) {
-//        const auto id = std::hash<Coordinate>()(x.id);
         const auto id = CoordinateHash<kMazeSize>()(x.id);
         ids.push_back(id);
         std::push_heap(ids.begin(), ids.end(), comp);
     }
 
     void push(NodeContainerType::value_type &&x) {
-//        const auto id = std::hash<Coordinate>()(x.id);
         const auto id = CoordinateHash<kMazeSize>()(x.id);
         ids.push_back(id);
         std::push_heap(ids.begin(), ids.end(), comp);
@@ -60,7 +53,6 @@ public:
 //    }
 
     void emplace(const NodeContainerType::value_type &x) {
-//        const auto id = std::hash<Coordinate>()(x.id);
         const auto id = CoordinateHash<kMazeSize>()(x.id);
         ids.push_back(id);
         std::push_heap(ids.begin(), ids.end(), comp);
@@ -69,12 +61,6 @@ public:
     void pop() {
         pop_heap(ids.begin(), ids.end(), comp);
         ids.pop_back();
-    }
-
-    void poyo() {
-        std::for_each(ids.begin(), ids.end(), [&](const int i) {
-            std::cout << (*nodes)[i].id << "," << (*nodes)[i].cost_f << " | ";
-        });
     }
 
 protected:

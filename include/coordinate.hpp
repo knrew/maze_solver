@@ -51,17 +51,3 @@ struct CoordinateHash {
         return c.x + c.y * kSize;
     }
 };
-
-//namespace std {
-//    template<>
-//    struct hash<Coordinate> {
-//        using argument_type = Coordinate;
-//        using result_type  = std::size_t;
-//
-//        result_type operator()(argument_type const &c) const noexcept {
-////            result_type const h1(std::hash<int>{}(c.x));
-////            result_type const h2(std::hash<int>{}(c.y));
-////            return h1 ^ (h2 << 1);;
-//        }
-//    };
-//}

@@ -32,4 +32,4 @@ struct AStarNode {
     };
 };
 
-using AStarNodeContainerType = std::deque<AStarNode>;
+using AStarNodeContainer = std::deque<AStarNode>;

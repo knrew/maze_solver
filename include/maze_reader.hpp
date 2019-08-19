@@ -68,11 +68,7 @@ private:
             goal_.y = std::stoi(factor[Index::kGoalY]);
 
             maze_[coordinate] = wall;
-
-            i++;
-//            std::cout << std::bitset<8>(maze_[coordinate].flags) << std::endl;
         }
-        std::cout << i << std::endl;
     }
 
     static std::deque<std::string> Split(const auto &input, const auto delimiter) {

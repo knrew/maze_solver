@@ -4,7 +4,7 @@
 #pragma once
 
 #include "maze.hpp"
-#include "a_star_container.hpp"
+#include "a_star_priority_queue.hpp"
 #include "a_star_node.hpp"
 #include <cmath>
 #include <algorithm>
@@ -68,7 +68,7 @@ public:
             return;
         }
 
-        AStarNodeContainerType adjacent_nodes;
+        AStarNodeContainer adjacent_nodes;
 
         for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                              Wall::Direction::kSouth, Wall::Direction::kWest}) {
@@ -111,15 +111,12 @@ public:
             const auto is_in_close = nodes_[m.id].state == AStarNode::State::kClose;
 
             if (!is_in_open && !is_in_close) {
-                std::cout << "#oc#";
                 nodes_[m.id].setAll(m.id, top_node.id, f_tmp, AStarNode::State::kOpen);
                 open_.emplace(nodes_[m.id]);
             } else if (is_in_open && f_tmp < nodes_[m.id].cost_f) {
-                std::cout << "#o#";
                 nodes_[m.id].setAll(m.id, top_node.id, f_tmp, AStarNode::State::kOpen);
                 open_.emplace(nodes_[m.id]);
             } else if (is_in_close && f_tmp < nodes_[m.id].cost_f) {
-                std::cout << "#c#";
                 nodes_[m.id].setAll(m.id, top_node.id, f_tmp, AStarNode::State::kOpen);
                 open_.emplace(nodes_[m.id]);
             } else {
@@ -131,7 +128,6 @@ public:
 #endif
 
         nodes_[top_node.id].state = AStarNode::State::kClose;
-        open_.poyo();
         CalculateNextNode();
     }
 
@@ -151,7 +147,7 @@ public:
         return optimal_route;
     }
 
-    const Coordinate &GetTargetCoordinate() const { return target_; }
+    const Coordinate &GetNextNodeCoordinate() const { return target_; }
 
     const AStarNode &GetGoalNode() const { return nodes_[goal_]; }
 

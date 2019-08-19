@@ -52,12 +52,7 @@ int main(const int argc, const char *const *const argv) {
         start_coordinate = reader.GetStart();
         goal_coordinate = reader.GetGoal();
 
-        int cnt = 0;
-        std::for_each(maze.cbegin(), maze.cend(), [&](auto &w) {
-            cnt++;
-            std::cout << std::bitset<8>(w.flags) << std::endl;
-        });
-        std::cout << cnt << std::endl;
+//        std::for_each(maze.cbegin(), maze.cend(), [&](auto &w) { std::cout << std::bitset<8>(w.flags) << std::endl; });
     }
 
     std::cout << "start: " << start_coordinate << std::endl;
@@ -65,7 +60,6 @@ int main(const int argc, const char *const *const argv) {
 
     std::deque<Coordinate> search_route;
     AStarSearch<8> a_star(start_coordinate, goal_coordinate);
-
     while (true) {
         if (a_star.HasFoundAnswer()) {
 //            std::cout << "optimal route has found!" << std::endl;
@@ -78,26 +72,25 @@ int main(const int argc, const char *const *const argv) {
         }
 
         a_star.CalculateNextNode();
-        const auto next = a_star.GetTargetCoordinate();
+        const auto target = a_star.GetNextNodeCoordinate();
 
-        search_route.emplace_back(next);
+        search_route.emplace_back(target);
 
-        auto wall = maze[next];
+        auto wall = maze[target];
         wall.is_known_north = wall.is_known_east = wall.is_known_south = wall.is_known_west = true;
-        a_star.SetWall(next, wall);
+        a_star.SetWall(target, wall);
     }
+
+    const auto optimal_route = a_star.CalculateOptimalRoute();
 
     std::cout << "search route  | ";
     std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });
     std::cout << std::endl;
-
-    RouteWriter::Write(search_route_file_name, search_route);
-
-    const auto optimal_route = a_star.CalculateOptimalRoute();
-
     std::cout << "optimal route | ";
     std::for_each(optimal_route.cbegin(), optimal_route.cend(), [](const auto &c) { std::cout << c << ","; });
     std::cout << std::endl;
+
+    RouteWriter::Write(search_route_file_name, search_route);
     RouteWriter::Write(opt_route_file_name, optimal_route);
 
     return 0;
