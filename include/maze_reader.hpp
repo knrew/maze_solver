@@ -13,6 +13,7 @@
 #include <algorithm>
 #include "maze.hpp"
 
+template<std::size_t kMazeSize>
 class MazeReader {
 private:
     enum Index {
@@ -29,7 +30,7 @@ private:
     };
 
 public:
-    explicit MazeReader(const std::string &file_name, const bool header = true) :
+    explicit MazeReader(const std::string &file_name, const std::size_t maze_size, const bool header = true) :
             file_name_(file_name), header_(header), maze_(), start_(), goal_() {
         Read();
     }
@@ -81,7 +82,7 @@ private:
 
     const std::string file_name_;
     const bool header_;
-    Maze<> maze_;
+    Maze<Wall, kMazeSize> maze_;
     Coordinate start_;
     Coordinate goal_;
 };
