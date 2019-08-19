@@ -10,7 +10,7 @@
 #include "maze.hpp"
 #include "a_star_node.hpp"
 
-template<int kMazeSize>
+template<std::size_t kMazeSize>
 class AStarPriorityQueue {
 public:
     using Node = AStarNode;
@@ -18,13 +18,13 @@ public:
     using NodeContainerPtr = NodeContainer *;
     using NodeContainerConstPtr = NodeContainerPtr const;
 
-    using IDContainer = std::deque<int>;
-    using CompareFunction = std::function<bool(const int &, const int &)>;
+    using IDContainer = std::deque<std::size_t>;
+    using CompareFunction = std::function<bool(const std::size_t &, const std::size_t &)>;
 
     explicit AStarPriorityQueue(NodeContainer &nodes) :
             ids_(),
             nodes_(&nodes),
-            comp_([&](const int &a, const int &b) { return Node::LessCost()((*nodes_)[a], (*nodes_)[b]); }) {};
+            comp_([&](const std::size_t &a, const std::size_t &b) { return Node::LessCost()((*nodes_)[a], (*nodes_)[b]); }) {};
 
     bool empty() const { return ids_.empty(); }
 
@@ -47,15 +47,16 @@ public:
         std::push_heap(ids_.begin(), ids_.end(), comp_);
     }
 
+    /*
+     * TODO:implement emaplace correctly
+     */
 //    template<class... Args>
 //    void emplace(Args &&... args) {
 //        push(std::forward<Args>(args)...);
 //    }
 
     void emplace(const typename NodeContainer::value_type &x) {
-        const auto id = CoordinateHash<kMazeSize>()(x.id);
-        ids_.push_back(id);
-        std::push_heap(ids_.begin(), ids_.end(), comp_);
+        push(x);
     }
 
     void pop() {

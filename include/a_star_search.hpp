@@ -11,10 +11,9 @@
 
 #define ENABLE_COUT
 
-template<int kMazeSize>
+template<std::size_t kMazeSize>
 class AStarSearch {
 public:
-//    std::shared_ptr<Maze<AStarNode,>> p;
     explicit AStarSearch(const Coordinate &start, const Coordinate &goal) :
             start_(start),
             goal_(goal),

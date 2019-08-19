@@ -7,11 +7,11 @@
 #include <cstdint>
 
 struct Coordinate {
-    int x, y;
+    int8_t x, y;
 
     constexpr Coordinate() : x(0), y(0) {}
 
-    constexpr Coordinate(const int x, const int y) : x(x), y(y) {}
+    constexpr Coordinate(const int8_t x, const int8_t y) : x(x), y(y) {}
 
     constexpr Coordinate(const Coordinate &c) = default;
 
@@ -45,7 +45,7 @@ std::ostream &operator<<(std::ostream &os, const Coordinate &obj) {
     return os;
 }
 
-template<int kSize>
+template<std::size_t kSize>
 struct CoordinateHash {
     std::size_t operator()(Coordinate const &c) const noexcept {
         return c.x + c.y * kSize;

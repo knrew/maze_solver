@@ -8,7 +8,7 @@
 #include "wall.hpp"
 #include <deque>
 
-template<class T, int kMazeSize>
+template<class T, const std::size_t kMazeSize>
 class Maze : public std::deque<T> {
 public:
     Maze() : std::deque<T>(kMazeSize * kMazeSize) {}
@@ -31,11 +31,11 @@ public:
         return std::deque<T>::operator[](CoordinateHash<kMazeSize>()(c));
     }
 
-    typename std::deque<T>::reference operator[](const int index) {
+    typename std::deque<T>::reference operator[](const std::size_t index) {
         return std::deque<T>::operator[](index);
     }
 
-    typename std::deque<T>::const_reference operator[](const int index) const {
+    typename std::deque<T>::const_reference operator[](const std::size_t index) const {
         return std::deque<T>::operator[](index);
     }
 };
