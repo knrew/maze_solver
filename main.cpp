@@ -1,7 +1,18 @@
+#if 0
+#include <iostream>
+#include "include/a_star_search.hpp"
+
+int main() {
+    AStarSearch search(32, {0, 0}, {7, 7});
+    return 0;
+}
+
+#else
+
 #include <bitset>
 #include <cstdlib>
 #include "include/maze_reader.hpp"
-#include "include/a_star.hpp"
+#include "include/a_star_search.hpp"
 #include "include/route_writer.hpp"
 
 int main(const int argc, const char *const *const argv) {
@@ -31,20 +42,30 @@ int main(const int argc, const char *const *const argv) {
         }
     }();
 
-    Maze<> maze;
+    std::cout << "maze data: " << maze_data_file_name << std::endl;
+
+    Maze<Wall, 8> maze;
     Coordinate start_coordinate, goal_coordinate;
     {
-        MazeReader reader(maze_data_file_name, true);
+        MazeReader<8> reader(maze_data_file_name, true);
         maze = reader.GetMaze();
         start_coordinate = reader.GetStart();
         goal_coordinate = reader.GetGoal();
+
+        int cnt = 0;
+        std::for_each(maze.cbegin(), maze.cend(), [&](auto &w) {
+            cnt++;
+            std::cout << std::bitset<8>(w.flags) << std::endl;
+        });
+        std::cout << cnt << std::endl;
     }
 
     std::cout << "start: " << start_coordinate << std::endl;
     std::cout << "goal: " << goal_coordinate << std::endl;
 
-    AStarSearch::Path search_route;
-    AStarSearch a_star(start_coordinate, goal_coordinate);
+    std::deque<Coordinate> search_route;
+    AStarSearch<8> a_star(start_coordinate, goal_coordinate);
+
     while (true) {
         if (a_star.HasFoundAnswer()) {
 //            std::cout << "optimal route has found!" << std::endl;
@@ -66,9 +87,9 @@ int main(const int argc, const char *const *const argv) {
         a_star.SetWall(next, wall);
     }
 
-//    std::cout << "search route  | ";
-//    std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });
-//    std::cout << std::endl;
+    std::cout << "search route  | ";
+    std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });
+    std::cout << std::endl;
 
     RouteWriter::Write(search_route_file_name, search_route);
 
@@ -81,3 +102,5 @@ int main(const int argc, const char *const *const argv) {
 
     return 0;
 }
+
+#endif

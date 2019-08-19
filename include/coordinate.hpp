@@ -45,16 +45,23 @@ std::ostream &operator<<(std::ostream &os, const Coordinate &obj) {
     return os;
 }
 
-namespace std {
-    template<>
-    struct hash<Coordinate> {
-        using argument_type = Coordinate;
-        using result_type  = std::size_t;
+template<int kSize>
+struct CoordinateHash {
+    std::size_t operator()(Coordinate const &c) const noexcept {
+        return c.x + c.y * kSize;
+    }
+};
 
-        result_type operator()(argument_type const &c) const noexcept {
-            result_type const h1(std::hash<int>{}(c.x));
-            result_type const h2(std::hash<int>{}(c.y));
-            return h1 ^ (h2 << 1);
-        }
-    };
-}
+//namespace std {
+//    template<>
+//    struct hash<Coordinate> {
+//        using argument_type = Coordinate;
+//        using result_type  = std::size_t;
+//
+//        result_type operator()(argument_type const &c) const noexcept {
+////            result_type const h1(std::hash<int>{}(c.x));
+////            result_type const h2(std::hash<int>{}(c.y));
+////            return h1 ^ (h2 << 1);;
+//        }
+//    };
+//}
