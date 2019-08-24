@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "coordinate.hpp"
+#include <cstdint>
 #include <deque>
+#include "coordinate.hpp"
 
 namespace maze_solver {
     template<class T, const std::size_t kMazeSize>

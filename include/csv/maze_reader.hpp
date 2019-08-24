@@ -5,12 +5,9 @@
 #pragma once
 
 #include <string>
+#include <deque>
 #include <fstream>
 #include <sstream>
-#include <vector>
-#include <iostream>
-#include <map>
-#include <algorithm>
 #include "../maze.hpp"
 #include "../wall.hpp"
 

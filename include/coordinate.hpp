@@ -5,10 +5,12 @@
 #pragma once
 
 #include <cstdint>
+#include <cmath>
+#include <ostream>
 
 namespace maze_solver {
     struct Coordinate {
-        int8_t x, y;
+        std::int8_t x, y;
 
         constexpr Coordinate() : x(0), y(0) {}
 

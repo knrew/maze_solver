@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include <cstdint>
 #include "../coordinate.hpp"
+#include "../maze.hpp"
 
 namespace maze_solver {
     namespace a_star {

@@ -6,8 +6,8 @@
 
 #include <deque>
 #include <fstream>
-#include "../maze.hpp"
 #include <algorithm>
+#include "../maze.hpp"
 
 namespace maze_solver {
     class RouteWriter {
