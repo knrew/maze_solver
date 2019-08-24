@@ -30,9 +30,9 @@ namespace maze_solver {
 
             void setParentCoordinate(const Coordinate &c) { parent_coordinate_ = c; }
 
-            float getCost() const { return cost_f_; }
+            float getCostF() const { return cost_f_; }
 
-            void setCost(const float cost_f) { cost_f_ = cost_f; }
+            void setCostF(const float cost_f) { cost_f_ = cost_f; }
 
             bool isOpen() const { return state_ == State::kOpen; }
 
@@ -52,7 +52,7 @@ namespace maze_solver {
         template<std::size_t kMazeSize>
         class Nodes : public Maze<Node, kMazeSize> {
         public:
-            Nodes() : Maze<Node, kMazeSize>() {
+            constexpr Nodes() : Maze<Node, kMazeSize>() {
                 for (std::size_t i = 0; i < kMazeSize; i++) {
                     for (std::size_t j = 0; j < kMazeSize; j++) {
                         const Coordinate c(i, j);

@@ -12,9 +12,9 @@ namespace maze_solver {
     template<class T, const std::size_t kMazeSize>
     class Maze : public std::deque<T> {
     public:
-        Maze() : std::deque<T>(kMazeSize * kMazeSize) {}
+        constexpr Maze() : std::deque<T>(kMazeSize * kMazeSize) {}
 
-        Maze(const Maze &maze) : std::deque<T>(maze) {}
+        constexpr Maze(const Maze &maze) : std::deque<T>(maze) {}
 
         static constexpr bool IsOnRange(const Coordinate &c) {
             return c.x >= 0 && c.x < kMazeSize && c.y >= 0 && c.y < kMazeSize;
@@ -32,6 +32,9 @@ namespace maze_solver {
             return std::deque<T>::operator[](Coordinate::Hash<kMazeSize>()(c));
         }
 
+        /*
+         * TODO:↓delete
+         */
         typename std::deque<T>::reference operator[](const std::size_t index) {
             return std::deque<T>::operator[](index);
         }

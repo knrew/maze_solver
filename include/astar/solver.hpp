@@ -27,7 +27,7 @@ namespace maze_solver {
                     open_(nodes_),
                     has_no_answer_(false),
                     has_found_answer_(false) {
-                nodes_[start_].setCost(CalculateHeuristic(start_));
+                nodes_[start_].setCostF(CalculateHeuristic(start_));
                 nodes_[start_].toOpen();
                 open_.emplace(nodes_[start_]);
             }
@@ -62,12 +62,11 @@ namespace maze_solver {
                     return;
                 }
 
-                static std::deque<Node> adjacent_nodes;
-                adjacent_nodes.clear();
+                static std::deque<Coordinate> adjacent_node_coordinates;
+                adjacent_node_coordinates.clear();
 
                 for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                                      Wall::Direction::kSouth, Wall::Direction::kWest}) {
-                    auto n = top_node;
                     auto c = top_node.getCoordinate();
                     if (!maze_[top_node.getCoordinate()].WallExists(d)) {
                         switch (d) {
@@ -86,8 +85,7 @@ namespace maze_solver {
                         }
 
                         if (maze_.IsOnRange(c)) {
-                            n.setCoordinate(c);
-                            adjacent_nodes.emplace_back(n);
+                            adjacent_node_coordinates.emplace_back(c);
                         }
                     }
                 }
@@ -97,7 +95,7 @@ namespace maze_solver {
 #if defined(ENABLE_COUT)
                 std::cout << "adj: ";
 #endif
-                for (const auto &m : adjacent_nodes) {
+                for (const auto &m : adjacent_node_coordinates) {
                     const auto f_tmp = CalculateNextCostF(top_node, m);
 
 #if defined(ENABLE_COUT)
@@ -105,17 +103,15 @@ namespace maze_solver {
 #endif
 
                     const auto update_node = [&]() {
-                        nodes_[m.getCoordinate()].setParentCoordinate(top_node.getCoordinate());
-                        nodes_[m.getCoordinate()].setCost(f_tmp);
-                        nodes_[m.getCoordinate()].toOpen();
-                        open_.emplace(nodes_[m.getCoordinate()]);
+                        nodes_[m].setParentCoordinate(top_node.getCoordinate());
+                        nodes_[m].setCostF(f_tmp);
+                        nodes_[m].toOpen();
+                        open_.emplace(nodes_[m]);
                     };
 
-                    if (!nodes_[m.getCoordinate()].isOpen() && !nodes_[m.getCoordinate()].isClose()) {
+                    if (!nodes_[m].isOpen() && !nodes_[m].isClose()) {
                         update_node();
-                    } else if (nodes_[m.getCoordinate()].isOpen() && f_tmp < nodes_[m.getCoordinate()].getCost()) {
-                        update_node();
-                    } else if (nodes_[m.getCoordinate()].isClose() && f_tmp < nodes_[m.getCoordinate()].getCost()) {
+                    } else if (f_tmp < nodes_[m].getCostF()) {
                         update_node();
                     } else {}
                 }
@@ -155,10 +151,10 @@ namespace maze_solver {
             void SetWall(const Coordinate &c, const Wall &w) { maze_[c] = w; }
 
         private:
-            float CalculateNextCostF(const Node &current, const Node &next) const {
+            float CalculateNextCostF(const Node &current, const Coordinate &next) const {
                 const auto h = CalculateHeuristic(current.getCoordinate());
-                const auto g = current.getCost() - h;
-                const auto f = g + CalculateHeuristic(next.getCoordinate()) + 1;
+                const auto g = current.getCostF() - h;
+                const auto f = g + CalculateHeuristic(next) + 1;
                 return f;
             }
 
@@ -167,11 +163,7 @@ namespace maze_solver {
             }
 
             float CalculateHeuristic(const Coordinate &c) const {
-                return CalculateDistance(c, goal_);
-            }
-
-            static float CalculateDistance(const auto &p1, const auto &p2) {
-                return std::sqrt(static_cast<float>((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
+                return Coordinate::Distance()(c, goal_);
             }
 
             bool IsGoal(const Node &node) const {
