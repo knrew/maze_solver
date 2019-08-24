@@ -24,7 +24,7 @@ public:
             has_no_answer_(false),
             has_found_answer_(false) {
 
-        nodes_[goal_].id = goal_;
+        nodes_[goal_].setCoordinate(goal_);
 
         nodes_[start_].setAll(start_, start_, CalculateHeuristic(start_), AStarNode::State::kOpen);
         open_.emplace(nodes_[start_]);
@@ -49,7 +49,7 @@ public:
         const auto top_node = open_.top();
 
         if (IsGoal(top_node)) {
-            target_ = top_node.id;
+            target_ = top_node.getCoordinate();
             nodes_[goal_] = top_node;
             has_found_answer_ = true;
             return;
@@ -59,7 +59,7 @@ public:
         std::cout << "top_node: " << top_node.id << " |  " << std::bitset<8>(maze_[top_node.id].flags) << std::endl;
 #endif
 
-        if (!maze_[top_node.id].HasCheckedWall()) {
+        if (!maze_[top_node.getCoordinate()].HasCheckedWall()) {
             target_ = top_node.getCoordinate();
             return;
         }
@@ -69,21 +69,23 @@ public:
         for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                              Wall::Direction::kSouth, Wall::Direction::kWest}) {
             auto n = top_node;
-            if (!maze_[top_node.id].WallExists(d)) {
+            auto c = top_node.getCoordinate();
+            if (!maze_[top_node.getCoordinate()].WallExists(d)) {
                 switch (d) {
                     case Wall::Direction::kNorth:
-                        ++n.id.y;
+                        ++c.y;
                         break;
                     case Wall::Direction::kEast:
-                        ++n.id.x;
+                        ++c.x;
                         break;
                     case Wall::Direction::kSouth:
-                        --n.id.y;
+                        --c.y;
                         break;
                     case Wall::Direction::kWest:
-                        --n.id.x;
+                        --c.x;
                         break;
                 }
+                n.setCoordinate(c);
                 if (maze_.IsOnRange(n.getCoordinate())) {
                     adjacent_nodes.emplace_back(n);
                 }
@@ -96,25 +98,28 @@ public:
         std::cout << "adj: ";
 #endif
         for (const auto &m : adjacent_nodes) {
-            const auto h = CalculateHeuristic(top_node.id);
-            const auto g = top_node.cost_f - h;
-            const auto f_tmp = g + CalculateHeuristic(m.id) + 1;
+            const auto h = CalculateHeuristic(top_node.getCoordinate());
+            const auto g = top_node.getCost() - h;
+            const auto f_tmp = g + CalculateHeuristic(m.getCoordinate()) + 1;
 
 #if defined(ENABLE_COUT)
             std::cout << m.id << "[" << f_tmp << "], ";
 #endif
-            const auto is_in_open = nodes_[m.id].state == AStarNode::State::kOpen;
-            const auto is_in_close = nodes_[m.id].state == AStarNode::State::kClose;
+            const auto is_in_open = nodes_[m.getCoordinate()].getState() == AStarNode::State::kOpen;
+            const auto is_in_close = nodes_[m.getCoordinate()].getState() == AStarNode::State::kClose;
 
             if (!is_in_open && !is_in_close) {
-                nodes_[m.id].setAll(m.id, top_node.id, f_tmp, AStarNode::State::kOpen);
-                open_.emplace(nodes_[m.id]);
-            } else if (is_in_open && f_tmp < nodes_[m.id].cost_f) {
-                nodes_[m.id].setAll(m.id, top_node.id, f_tmp, AStarNode::State::kOpen);
-                open_.emplace(nodes_[m.id]);
-            } else if (is_in_close && f_tmp < nodes_[m.id].cost_f) {
-                nodes_[m.id].setAll(m.id, top_node.id, f_tmp, AStarNode::State::kOpen);
-                open_.emplace(nodes_[m.id]);
+                nodes_[m.getCoordinate()].setAll(m.getCoordinate(),
+                                                 top_node.getCoordinate(), f_tmp, AStarNode::State::kOpen);
+                open_.emplace(nodes_[m.getCoordinate()]);
+            } else if (is_in_open && f_tmp < nodes_[m.getCoordinate()].getCost()) {
+                nodes_[m.getCoordinate()].setAll(m.getCoordinate(), top_node.getCoordinate(), f_tmp,
+                                                 AStarNode::State::kOpen);
+                open_.emplace(nodes_[m.getCoordinate()]);
+            } else if (is_in_close && f_tmp < nodes_[m.getCoordinate()].getCost()) {
+                nodes_[m.getCoordinate()].setAll(m.getCoordinate(), top_node.getCoordinate(), f_tmp,
+                                                 AStarNode::State::kOpen);
+                open_.emplace(nodes_[m.getCoordinate()]);
             } else {
 
             }
@@ -123,7 +128,7 @@ public:
         std::cout << std::endl;
 #endif
 
-        nodes_[top_node.id].state = AStarNode::State::kClose;
+        nodes_[top_node.getCoordinate()].setState(AStarNode::State::kClose);
         CalculateNextNode();
     }
 
@@ -134,11 +139,11 @@ public:
         if (!has_found_answer_) { return optimal_route; }
 
         AStarNode n = nodes_[goal_];
-        while (n.id != start_) {
-            optimal_route.emplace_front(n.id);
-            n = nodes_[n.parent_id];
+        while (n.getCoordinate() != start_) {
+            optimal_route.emplace_front(n.getCoordinate());
+            n = nodes_[n.getParentCoordinate()];
         }
-        optimal_route.emplace_front(nodes_[start_].id);
+        optimal_route.emplace_front(nodes_[start_].getCoordinate());
 
         return optimal_route;
     }
@@ -155,7 +160,7 @@ public:
 
 private:
     float CalculateHeuristic(const AStarNode &node) const {
-        return CalculateHeuristic(node.id);
+        return CalculateHeuristic(node.getCoordinate());
     }
 
     float CalculateHeuristic(const Coordinate &c) const {
@@ -167,7 +172,7 @@ private:
     }
 
     bool IsGoal(const AStarNode &node) const {
-        return node.id == goal_;
+        return node.getCoordinate() == goal_;
     }
 
     const Coordinate start_, goal_;

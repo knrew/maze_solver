@@ -15,7 +15,6 @@ class AStarPriorityQueue {
 public:
     using Node = AStarNode;
     using NodeContainer = Maze<Node, kMazeSize>;
-    
     using IDContainer = std::deque<std::size_t>;
     using CompareFunction = std::function<bool(const std::size_t &, const std::size_t &)>;
 
@@ -23,7 +22,7 @@ public:
             ids_(),
             nodes_(nodes),
             comp_([&](const std::size_t &a, const std::size_t &b) {
-                return Node::LessCost()(nodes_[a], nodes_[b]);
+                return Node::Compare()(nodes_[a], nodes_[b]);
             }) {};
 
     bool empty() const { return ids_.empty(); }
@@ -36,13 +35,13 @@ public:
     }
 
     void push(const typename NodeContainer::value_type &x) {
-        const auto id = Coordinate::Hash<kMazeSize>()(x.id);
+        const auto id = Coordinate::Hash<kMazeSize>()(x.getCoordinate());
         ids_.push_back(id);
         std::push_heap(ids_.begin(), ids_.end(), comp_);
     }
 
     void push(typename NodeContainer::value_type &&x) {
-        const auto id = Coordinate::Hash<kMazeSize>()(x.id);
+        const auto id = Coordinate::Hash<kMazeSize>()(x.getCoordinate());
         ids_.push_back(id);
         std::push_heap(ids_.begin(), ids_.end(), comp_);
     }
