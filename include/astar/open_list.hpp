@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <queue>
+#include <deque>
+#include <algorithm>
 #include <functional>
-#include <memory>
 #include "../maze.hpp"
 #include "node.hpp"
 
@@ -18,7 +18,7 @@ namespace maze_solver {
         template<std::size_t kMazeSize>
         class OpenList {
         public:
-            using NodeContainer = Maze<Node, kMazeSize>;
+            using NodeContainer = Nodes<kMazeSize>;
             using IDContainer = std::deque<std::size_t>;
             using CompareFunction = std::function<bool(const std::size_t &, const std::size_t &)>;
 

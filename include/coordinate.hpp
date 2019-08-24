@@ -5,10 +5,12 @@
 #pragma once
 
 #include <cstdint>
+#include <cmath>
+#include <ostream>
 
 namespace maze_solver {
     struct Coordinate {
-        int8_t x, y;
+        std::int8_t x, y;
 
         constexpr Coordinate() : x(0), y(0) {}
 
@@ -38,6 +40,14 @@ namespace maze_solver {
 
         constexpr bool operator<=(const Coordinate &c) const noexcept {
             return !(*this > c);
+        }
+
+        static constexpr bool IsOnRange(const Coordinate &c, const std::size_t min, const std::size_t max) noexcept {
+            return c.x >= min && c.x < max && c.y >= min && c.y < max;
+        }
+
+        bool IsOnRange(const std::size_t min, const std::size_t max) const noexcept {
+            return IsOnRange(*this, min, max);
         }
 
         struct Distance {

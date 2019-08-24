@@ -3,13 +3,20 @@
 //
 #pragma once
 
+#include <cstdint>
 #include "../maze.hpp"
-#include "open_list.hpp"
+#include "../wall.hpp"
 #include "node.hpp"
-#include <cmath>
-#include <algorithm>
+#include "open_list.hpp"
 
 //#define ENABLE_COUT
+
+#if defined(ENABLE_COUT)
+
+#include <iostream>
+#include <bitset>
+
+#endif
 
 namespace maze_solver {
     namespace a_star {
@@ -57,7 +64,7 @@ namespace maze_solver {
                 std::cout << "top_node: " << top_node.id << " |  " << std::bitset<8>(maze_[top_node.id].flags) << std::endl;
 #endif
 
-                if (!maze_[top_node.getCoordinate()].HasCheckedWall()) {
+                if (!maze_[top_node.getCoordinate()].IsKnownAllDirection()) {
                     target_ = top_node.getCoordinate();
                     return;
                 }
@@ -99,7 +106,7 @@ namespace maze_solver {
                     const auto f_tmp = CalculateNextCostF(top_node, m);
 
 #if defined(ENABLE_COUT)
-                    std::cout << m.id << "[" << f_tmp << "], ";
+                    std::cout << m << "[" << f_tmp << "], ";
 #endif
 
                     const auto update_node = [&]() {

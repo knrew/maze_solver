@@ -4,14 +4,16 @@
 
 #pragma once
 
+#include <cstdint>
 #include "../coordinate.hpp"
+#include "../maze.hpp"
 
 namespace maze_solver {
     namespace a_star {
         class Node {
         public:
             struct Compare {
-                bool operator()(const Node &x, const Node &y) const { return x.cost_f_ > y.cost_f_; }
+                bool operator()(const Node &x, const Node &y) const noexcept { return x.cost_f_ > y.cost_f_; }
             };
 
         protected:
@@ -22,25 +24,25 @@ namespace maze_solver {
         public:
             Node() : coordinate_(), parent_coordinate_(), cost_f_(), state_(State::kNone) {}
 
-            const Coordinate &getCoordinate() const { return coordinate_; }
+            const Coordinate &getCoordinate() const noexcept { return coordinate_; }
 
-            void setCoordinate(const Coordinate &c) { coordinate_ = c; }
+            void setCoordinate(const Coordinate &c) noexcept { coordinate_ = c; }
 
-            const Coordinate &getParentCoordinate() const { return parent_coordinate_; }
+            const Coordinate &getParentCoordinate() const noexcept { return parent_coordinate_; }
 
-            void setParentCoordinate(const Coordinate &c) { parent_coordinate_ = c; }
+            void setParentCoordinate(const Coordinate &c) noexcept { parent_coordinate_ = c; }
 
-            float getCostF() const { return cost_f_; }
+            float getCostF() const noexcept { return cost_f_; }
 
-            void setCostF(const float cost_f) { cost_f_ = cost_f; }
+            void setCostF(const float cost_f) noexcept { cost_f_ = cost_f; }
 
-            bool isOpen() const { return state_ == State::kOpen; }
+            bool isOpen() const noexcept { return state_ == State::kOpen; }
 
-            bool isClose() const { return state_ == State::kClose; }
+            bool isClose() const noexcept { return state_ == State::kClose; }
 
-            void toOpen() { state_ = State::kOpen; }
+            void toOpen() noexcept { state_ = State::kOpen; }
 
-            void toClose() { state_ = State::kClose; }
+            void toClose() noexcept { state_ = State::kClose; }
 
         protected:
             Coordinate coordinate_;
