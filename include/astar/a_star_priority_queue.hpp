@@ -15,16 +15,16 @@ class AStarPriorityQueue {
 public:
     using Node = AStarNode;
     using NodeContainer = Maze<Node, kMazeSize>;
-    using NodeContainerPtr = NodeContainer *;
-    using NodeContainerConstPtr = NodeContainerPtr const;
-
+    
     using IDContainer = std::deque<std::size_t>;
     using CompareFunction = std::function<bool(const std::size_t &, const std::size_t &)>;
 
     explicit AStarPriorityQueue(NodeContainer &nodes) :
             ids_(),
-            nodes_(&nodes),
-            comp_([&](const std::size_t &a, const std::size_t &b) { return Node::LessCost()((*nodes_)[a], (*nodes_)[b]); }) {};
+            nodes_(nodes),
+            comp_([&](const std::size_t &a, const std::size_t &b) {
+                return Node::LessCost()(nodes_[a], nodes_[b]);
+            }) {};
 
     bool empty() const { return ids_.empty(); }
 
@@ -32,7 +32,7 @@ public:
 
     typename NodeContainer::const_reference top() const {
         __glibcxx_requires_nonempty();
-        return (*nodes_)[ids_.front()];
+        return nodes_[ids_.front()];
     }
 
     void push(const typename NodeContainer::value_type &x) {
@@ -66,6 +66,6 @@ public:
 
 protected:
     IDContainer ids_;
-    const NodeContainerConstPtr nodes_;
+    const NodeContainer &nodes_;
     const CompareFunction comp_;
 };
