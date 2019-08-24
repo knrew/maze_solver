@@ -26,7 +26,11 @@ public:
 
         nodes_[goal_].setCoordinate(goal_);
 
-        nodes_[start_].setAll(start_, start_, CalculateHeuristic(start_), AStarNode::State::kOpen);
+//        nodes_[start_].setAll(start_, start_, CalculateHeuristic(start_));
+        nodes_[start_].setCoordinate(start_);
+        nodes_[start_].setParentCoordinate(start_);
+        nodes_[start_].setCost(CalculateHeuristic(start_));
+        nodes_[start_].toOpen();
         open_.emplace(nodes_[start_]);
 
         Wall wall;
@@ -64,7 +68,8 @@ public:
             return;
         }
 
-        std::deque<AStarNode> adjacent_nodes;
+        static std::deque<AStarNode> adjacent_nodes;
+        adjacent_nodes.clear();
 
         for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                              Wall::Direction::kSouth, Wall::Direction::kWest}) {
@@ -85,8 +90,9 @@ public:
                         --c.x;
                         break;
                 }
-                n.setCoordinate(c);
-                if (maze_.IsOnRange(n.getCoordinate())) {
+
+                if (maze_.IsOnRange(c)) {
+                    n.setCoordinate(c);
                     adjacent_nodes.emplace_back(n);
                 }
             }
@@ -98,37 +104,33 @@ public:
         std::cout << "adj: ";
 #endif
         for (const auto &m : adjacent_nodes) {
-            const auto h = CalculateHeuristic(top_node.getCoordinate());
-            const auto g = top_node.getCost() - h;
-            const auto f_tmp = g + CalculateHeuristic(m.getCoordinate()) + 1;
+            const auto f_tmp = CalculateNextCostF(top_node, m);
 
 #if defined(ENABLE_COUT)
             std::cout << m.id << "[" << f_tmp << "], ";
 #endif
-            const auto is_in_open = nodes_[m.getCoordinate()].getState() == AStarNode::State::kOpen;
-            const auto is_in_close = nodes_[m.getCoordinate()].getState() == AStarNode::State::kClose;
+            const auto update_node = [&]() {
+                nodes_[m.getCoordinate()].setCoordinate(m.getCoordinate());
+                nodes_[m.getCoordinate()].setParentCoordinate(top_node.getCoordinate());
+                nodes_[m.getCoordinate()].setCost(f_tmp);
+                nodes_[m.getCoordinate()].toOpen();
+                open_.emplace(nodes_[m.getCoordinate()]);
+            };
 
-            if (!is_in_open && !is_in_close) {
-                nodes_[m.getCoordinate()].setAll(m.getCoordinate(),
-                                                 top_node.getCoordinate(), f_tmp, AStarNode::State::kOpen);
-                open_.emplace(nodes_[m.getCoordinate()]);
-            } else if (is_in_open && f_tmp < nodes_[m.getCoordinate()].getCost()) {
-                nodes_[m.getCoordinate()].setAll(m.getCoordinate(), top_node.getCoordinate(), f_tmp,
-                                                 AStarNode::State::kOpen);
-                open_.emplace(nodes_[m.getCoordinate()]);
-            } else if (is_in_close && f_tmp < nodes_[m.getCoordinate()].getCost()) {
-                nodes_[m.getCoordinate()].setAll(m.getCoordinate(), top_node.getCoordinate(), f_tmp,
-                                                 AStarNode::State::kOpen);
-                open_.emplace(nodes_[m.getCoordinate()]);
-            } else {
-
-            }
+            if (!nodes_[m.getCoordinate()].isOpen() && !nodes_[m.getCoordinate()].isClose()) {
+                update_node();
+            } else if (nodes_[m.getCoordinate()].isOpen() && f_tmp < nodes_[m.getCoordinate()].getCost()) {
+                update_node();
+            } else if (nodes_[m.getCoordinate()].isClose() && f_tmp < nodes_[m.getCoordinate()].getCost()) {
+                update_node();
+            } else {}
         }
+
 #if defined(ENABLE_COUT)
         std::cout << std::endl;
 #endif
 
-        nodes_[top_node.getCoordinate()].setState(AStarNode::State::kClose);
+        nodes_[top_node.getCoordinate()].toClose();
         CalculateNextNode();
     }
 
@@ -159,6 +161,13 @@ public:
     void SetWall(const Coordinate &c, const Wall &w) { maze_[c] = w; }
 
 private:
+    float CalculateNextCostF(const AStarNode &current, const AStarNode &next) const {
+        const auto h = CalculateHeuristic(current.getCoordinate());
+        const auto g = current.getCost() - h;
+        const auto f = g + CalculateHeuristic(next.getCoordinate()) + 1;
+        return f;
+    }
+
     float CalculateHeuristic(const AStarNode &node) const {
         return CalculateHeuristic(node.getCoordinate());
     }

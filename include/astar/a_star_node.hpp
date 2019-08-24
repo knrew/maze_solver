@@ -12,37 +12,33 @@ public:
         bool operator()(const AStarNode &x, const AStarNode &y) const { return x.cost_f_ > y.cost_f_; }
     };
 
+protected:
     enum class State : uint8_t {
         kNone, kOpen, kClose
     };
 
+public:
     AStarNode() : coordinate_(), parent_coordinate_(), cost_f_(), state_(State::kNone) {}
 
     const Coordinate &getCoordinate() const { return coordinate_; }
 
+    void setCoordinate(const Coordinate &c) { coordinate_ = c; }
+
     const Coordinate &getParentCoordinate() const { return parent_coordinate_; }
+
+    void setParentCoordinate(const Coordinate &c) { parent_coordinate_ = c; }
 
     float getCost() const { return cost_f_; }
 
-    State getState() const { return state_; }
+    void setCost(const float cost_f) { cost_f_ = cost_f; }
 
     bool isOpen() const { return state_ == State::kOpen; }
 
     bool isClose() const { return state_ == State::kClose; }
 
-    bool isNeitherOpenNorClose() const { return state_ == State::kNone; }
+    void toOpen() { state_ = State::kOpen; }
 
-    void setCoordinate(const Coordinate &c) { coordinate_ = c; }
-
-    void setState(const State s) { state_ = s; }
-
-    void
-    setAll(const Coordinate &coordinate, const Coordinate &parent_coordinate, const float cost_f, const State &state) {
-        coordinate_ = coordinate;
-        parent_coordinate_ = parent_coordinate;
-        cost_f_ = cost_f;
-        state_ = state;
-    }
+    void toClose() { state_ = State::kClose; }
 
 protected:
     Coordinate coordinate_;
