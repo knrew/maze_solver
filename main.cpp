@@ -16,6 +16,8 @@ int main() {
 #include "include/csv/route_writer.hpp"
 
 int main(const int argc, const char *const *const argv) {
+    constexpr size_t kMazeSize = 64;
+
     const std::vector<std::string> args(argv, argv + argc);
 
     const auto maze_data_file_name = [&]() {
@@ -44,10 +46,10 @@ int main(const int argc, const char *const *const argv) {
 
     std::cout << "maze data: " << maze_data_file_name << std::endl;
 
-    maze_solver::Maze<maze_solver::Wall, 8> maze;
+    maze_solver::Maze<maze_solver::Wall, kMazeSize> maze;
     maze_solver::Coordinate start_coordinate, goal_coordinate;
     {
-        maze_solver::MazeReader<8> reader(maze_data_file_name, true);
+        maze_solver::MazeReader<kMazeSize> reader(maze_data_file_name, true);
         maze = reader.GetMaze();
         start_coordinate = reader.GetStart();
         goal_coordinate = reader.GetGoal();
@@ -58,8 +60,8 @@ int main(const int argc, const char *const *const argv) {
     std::cout << "start: " << start_coordinate << std::endl;
     std::cout << "goal: " << goal_coordinate << std::endl;
 
-    std::deque<maze_solver::Coordinate> search_route;
-    maze_solver::a_star::Solver<8> a_star(start_coordinate, goal_coordinate);
+    maze_solver::a_star::Solver<kMazeSize>::Route search_route;
+    maze_solver::a_star::Solver<kMazeSize> a_star(start_coordinate, goal_coordinate);
     while (true) {
         if (a_star.HasFoundAnswer()) {
 //            std::cout << "optimal route has found!" << std::endl;

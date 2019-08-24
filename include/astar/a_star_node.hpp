@@ -48,5 +48,22 @@ namespace maze_solver {
             float cost_f_;
             State state_;
         };
+
+        template<std::size_t kMazeSize>
+        class Nodes : public Maze<Node, kMazeSize> {
+        public:
+            Nodes() : Maze<Node, kMazeSize>() {
+                for (std::size_t i = 0; i < kMazeSize; i++) {
+                    for (std::size_t j = 0; j < kMazeSize; j++) {
+                        const Coordinate c(i, j);
+                        Maze<Node, kMazeSize>::operator[](c).setCoordinate(c);
+                    }
+                }
+            }
+        };
+
+
     }
 }
+
+

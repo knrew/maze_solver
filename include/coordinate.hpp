@@ -47,9 +47,9 @@ namespace maze_solver {
             }
         };
     };
+}
 
-    std::ostream &operator<<(std::ostream &os, const Coordinate &obj) {
-        os << "(" << +obj.x << "," << +obj.y << ")";
-        return os;
-    }
+std::ostream &operator<<(std::ostream &os, const maze_solver::Coordinate &obj) {
+    os << "(" << +obj.x << "," << +obj.y << ")";
+    return os;
 }

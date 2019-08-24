@@ -16,6 +16,8 @@ namespace maze_solver {
         template<std::size_t kMazeSize>
         class Solver {
         public:
+            using Route = std::deque<Coordinate>;
+
             explicit Solver(const Coordinate &start, const Coordinate &goal) :
                     start_(start),
                     goal_(goal),
@@ -26,10 +28,6 @@ namespace maze_solver {
                     has_no_answer_(false),
                     has_found_answer_(false) {
 
-                nodes_[goal_].setCoordinate(goal_);
-
-//        nodes_[start_].setAll(start_, start_, CalculateHeuristic(start_));
-                nodes_[start_].setCoordinate(start_);
                 nodes_[start_].setParentCoordinate(start_);
                 nodes_[start_].setCost(CalculateHeuristic(start_));
                 nodes_[start_].toOpen();
@@ -111,8 +109,8 @@ namespace maze_solver {
 #if defined(ENABLE_COUT)
                     std::cout << m.id << "[" << f_tmp << "], ";
 #endif
+
                     const auto update_node = [&]() {
-                        nodes_[m.getCoordinate()].setCoordinate(m.getCoordinate());
                         nodes_[m.getCoordinate()].setParentCoordinate(top_node.getCoordinate());
                         nodes_[m.getCoordinate()].setCost(f_tmp);
                         nodes_[m.getCoordinate()].toOpen();
@@ -137,7 +135,7 @@ namespace maze_solver {
             }
 
             const auto &CalculateOptimalRoute() const {
-                static std::deque<Coordinate> optimal_route;
+                static Route optimal_route;
                 optimal_route.clear();
 
                 if (!has_found_answer_) { return optimal_route; }
@@ -188,7 +186,7 @@ namespace maze_solver {
 
             const Coordinate start_, goal_;
             Maze<Wall, kMazeSize> maze_;
-            Maze<Node, kMazeSize> nodes_;
+            Nodes<kMazeSize> nodes_;
             IDPriorityQueue<kMazeSize> open_;
 
             Coordinate target_;
