@@ -8,18 +8,21 @@
 #include <functional>
 #include <memory>
 #include "../maze.hpp"
-#include "a_star_node.hpp"
+#include "node.hpp"
 
+/*
+ * priority queue(int)
+ */
 namespace maze_solver {
     namespace a_star {
         template<std::size_t kMazeSize>
-        class IDPriorityQueue {
+        class OpenList {
         public:
             using NodeContainer = Maze<Node, kMazeSize>;
             using IDContainer = std::deque<std::size_t>;
             using CompareFunction = std::function<bool(const std::size_t &, const std::size_t &)>;
 
-            explicit IDPriorityQueue(NodeContainer &nodes) :
+            explicit OpenList(NodeContainer &nodes) :
                     ids_(),
                     nodes_(nodes),
                     comp_([&](const std::size_t &a, const std::size_t &b) {

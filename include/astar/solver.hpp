@@ -4,8 +4,8 @@
 #pragma once
 
 #include "../maze.hpp"
-#include "a_star_priority_queue.hpp"
-#include "a_star_node.hpp"
+#include "open_list.hpp"
+#include "node.hpp"
 #include <cmath>
 #include <algorithm>
 
@@ -21,21 +21,15 @@ namespace maze_solver {
             explicit Solver(const Coordinate &start, const Coordinate &goal) :
                     start_(start),
                     goal_(goal),
+                    target_(start),
                     maze_(),
                     nodes_(),
                     open_(nodes_),
-                    target_(),
                     has_no_answer_(false),
                     has_found_answer_(false) {
-
-                nodes_[start_].setParentCoordinate(start_);
                 nodes_[start_].setCost(CalculateHeuristic(start_));
                 nodes_[start_].toOpen();
                 open_.emplace(nodes_[start_]);
-
-                Wall wall;
-                wall.flags = 0b00000000;
-                SetWall(start_, wall);
             }
 
             void CalculateNextNode() {
@@ -185,11 +179,10 @@ namespace maze_solver {
             }
 
             const Coordinate start_, goal_;
+            Coordinate target_;
             Maze<Wall, kMazeSize> maze_;
             Nodes<kMazeSize> nodes_;
-            IDPriorityQueue<kMazeSize> open_;
-
-            Coordinate target_;
+            OpenList<kMazeSize> open_;
             bool has_no_answer_;
             bool has_found_answer_;
         };
