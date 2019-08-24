@@ -6,48 +6,56 @@
 
 #include <cstdint>
 
-struct Coordinate {
-    int8_t x, y;
+namespace maze_solver {
+    struct Coordinate {
+        int8_t x, y;
 
-    constexpr Coordinate() : x(0), y(0) {}
+        constexpr Coordinate() : x(0), y(0) {}
 
-    constexpr Coordinate(const int8_t x, const int8_t y) : x(x), y(y) {}
+        constexpr Coordinate(const int8_t x, const int8_t y) : x(x), y(y) {}
 
-    constexpr Coordinate(const Coordinate &c) = default;
+        constexpr Coordinate(const Coordinate &c) = default;
 
-    constexpr bool operator==(const Coordinate &c) const noexcept {
-        return this->x == c.x && this->y == c.y;
-    }
+        constexpr bool operator==(const Coordinate &c) const noexcept {
+            return this->x == c.x && this->y == c.y;
+        }
 
-    constexpr bool operator!=(const Coordinate &c) const noexcept {
-        return !(*this == c);
-    }
+        constexpr bool operator!=(const Coordinate &c) const noexcept {
+            return !(*this == c);
+        }
 
-    constexpr bool operator>(const Coordinate &c) const noexcept {
-        return this->x > c.x && this->y > c.y;
-    }
+        constexpr bool operator>(const Coordinate &c) const noexcept {
+            return this->x > c.x && this->y > c.y;
+        }
 
-    constexpr bool operator>=(const Coordinate &c) const noexcept {
-        return this->x >= c.x && this->y >= c.y;
-    }
+        constexpr bool operator>=(const Coordinate &c) const noexcept {
+            return this->x >= c.x && this->y >= c.y;
+        }
 
-    constexpr bool operator<(const Coordinate &c) const noexcept {
-        return !(*this >= c);
-    }
+        constexpr bool operator<(const Coordinate &c) const noexcept {
+            return !(*this >= c);
+        }
 
-    constexpr bool operator<=(const Coordinate &c) const noexcept {
-        return !(*this > c);
-    }
-};
+        constexpr bool operator<=(const Coordinate &c) const noexcept {
+            return !(*this > c);
+        }
 
-std::ostream &operator<<(std::ostream &os, const Coordinate &obj) {
+        struct Distance {
+            float operator()(const Coordinate &c1, const Coordinate &c2) const noexcept {
+                return std::sqrt(static_cast<float>((c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y)));
+            }
+        };
+
+        template<std::size_t kSize>
+        struct Hash {
+            std::size_t operator()(Coordinate const &c) const noexcept {
+                return c.x + c.y * kSize;
+            }
+        };
+    };
+}
+
+std::ostream &operator<<(std::ostream &os, const maze_solver::Coordinate &obj) {
     os << "(" << +obj.x << "," << +obj.y << ")";
     return os;
 }
-
-template<std::size_t kSize>
-struct CoordinateHash {
-    std::size_t operator()(Coordinate const &c) const noexcept {
-        return c.x + c.y * kSize;
-    }
-};

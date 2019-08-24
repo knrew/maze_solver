@@ -1,19 +1,8 @@
-#if 0
-#include <iostream>
-#include "include/a_star_search.hpp"
-
-int main() {
-    AStarSearch search(32, {0, 0}, {7, 7});
-    return 0;
-}
-
-#else
-
 #include <bitset>
 #include <cstdlib>
-#include "include/maze_reader.hpp"
-#include "include/a_star_search.hpp"
-#include "include/route_writer.hpp"
+#include "include/csv/maze_reader.hpp"
+#include "include/astar/solver.hpp"
+#include "include/csv/route_writer.hpp"
 
 int main(const int argc, const char *const *const argv) {
     const std::vector<std::string> args(argv, argv + argc);
@@ -44,10 +33,10 @@ int main(const int argc, const char *const *const argv) {
 
     std::cout << "maze data: " << maze_data_file_name << std::endl;
 
-    Maze<Wall, 8> maze;
-    Coordinate start_coordinate, goal_coordinate;
+    maze_solver::Maze<maze_solver::Wall, MAZE_SIZE> maze;
+    maze_solver::Coordinate start_coordinate, goal_coordinate;
     {
-        MazeReader<8> reader(maze_data_file_name, true);
+        maze_solver::MazeReader<MAZE_SIZE> reader(maze_data_file_name, true);
         maze = reader.GetMaze();
         start_coordinate = reader.GetStart();
         goal_coordinate = reader.GetGoal();
@@ -58,8 +47,9 @@ int main(const int argc, const char *const *const argv) {
     std::cout << "start: " << start_coordinate << std::endl;
     std::cout << "goal: " << goal_coordinate << std::endl;
 
-    std::deque<Coordinate> search_route;
-    AStarSearch<8> a_star(start_coordinate, goal_coordinate);
+    maze_solver::a_star::Solver<MAZE_SIZE>::Route search_route;
+    maze_solver::a_star::Solver<MAZE_SIZE> a_star(start_coordinate, goal_coordinate);
+
     while (true) {
         if (a_star.HasFoundAnswer()) {
 //            std::cout << "optimal route has found!" << std::endl;
@@ -90,10 +80,8 @@ int main(const int argc, const char *const *const argv) {
     std::for_each(optimal_route.cbegin(), optimal_route.cend(), [](const auto &c) { std::cout << c << ","; });
     std::cout << std::endl;
 
-    RouteWriter::Write(search_route_file_name, search_route);
-    RouteWriter::Write(opt_route_file_name, optimal_route);
+    maze_solver::RouteWriter::Write(search_route_file_name, search_route);
+    maze_solver::RouteWriter::Write(opt_route_file_name, optimal_route);
 
     return 0;
 }
-
-#endif
