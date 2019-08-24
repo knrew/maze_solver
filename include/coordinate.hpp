@@ -38,16 +38,16 @@ struct Coordinate {
     constexpr bool operator<=(const Coordinate &c) const noexcept {
         return !(*this > c);
     }
+
+    template<std::size_t kSize>
+    struct Hash {
+        std::size_t operator()(Coordinate const &c) const noexcept {
+            return c.x + c.y * kSize;
+        }
+    };
 };
 
 std::ostream &operator<<(std::ostream &os, const Coordinate &obj) {
     os << "(" << +obj.x << "," << +obj.y << ")";
     return os;
 }
-
-template<std::size_t kSize>
-struct CoordinateHash {
-    std::size_t operator()(Coordinate const &c) const noexcept {
-        return c.x + c.y * kSize;
-    }
-};

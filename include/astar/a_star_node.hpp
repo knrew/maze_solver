@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "coordinate.hpp"
+#include "../coordinate.hpp"
 
 struct AStarNode {
     enum class State : uint8_t {

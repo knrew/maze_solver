@@ -7,7 +7,7 @@
 #include <queue>
 #include <functional>
 #include <memory>
-#include "maze.hpp"
+#include "../maze.hpp"
 #include "a_star_node.hpp"
 
 template<std::size_t kMazeSize>
@@ -36,13 +36,13 @@ public:
     }
 
     void push(const typename NodeContainer::value_type &x) {
-        const auto id = CoordinateHash<kMazeSize>()(x.id);
+        const auto id = Coordinate::Hash<kMazeSize>()(x.id);
         ids_.push_back(id);
         std::push_heap(ids_.begin(), ids_.end(), comp_);
     }
 
     void push(typename NodeContainer::value_type &&x) {
-        const auto id = CoordinateHash<kMazeSize>()(x.id);
+        const auto id = Coordinate::Hash<kMazeSize>()(x.id);
         ids_.push_back(id);
         std::push_heap(ids_.begin(), ids_.end(), comp_);
     }

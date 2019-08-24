@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "maze.hpp"
+#include "../maze.hpp"
 #include "a_star_priority_queue.hpp"
 #include "a_star_node.hpp"
 #include <cmath>

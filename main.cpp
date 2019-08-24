@@ -12,7 +12,7 @@ int main() {
 #include <bitset>
 #include <cstdlib>
 #include "include/maze_reader.hpp"
-#include "include/a_star_search.hpp"
+#include "include/astar/a_star_search.hpp"
 #include "include/route_writer.hpp"
 
 int main(const int argc, const char *const *const argv) {
