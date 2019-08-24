@@ -40,7 +40,7 @@ public:
     setAll(const Coordinate &coordinate, const Coordinate &parent_coordinate, const float cost_f, const State &state) {
         coordinate_ = coordinate;
         parent_coordinate_ = parent_coordinate;
-        cost_f = cost_f;
+        cost_f_ = cost_f;
         state_ = state;
     }
 
