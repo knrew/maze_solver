@@ -40,6 +40,14 @@ namespace maze_solver {
             return !(*this > c);
         }
 
+        static constexpr bool IsOnRange(const Coordinate &c, const std::size_t min, const std::size_t max) noexcept {
+            return c.x >= min && c.x < max && c.y >= min && c.y < max;
+        }
+
+        bool IsOnRange(const std::size_t min, const std::size_t max) const noexcept {
+            return IsOnRange(*this, min, max);
+        }
+
         struct Distance {
             float operator()(const Coordinate &c1, const Coordinate &c2) const noexcept {
                 return std::sqrt(static_cast<float>((c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y)));

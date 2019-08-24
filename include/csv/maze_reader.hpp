@@ -12,6 +12,7 @@
 #include <map>
 #include <algorithm>
 #include "../maze.hpp"
+#include "../wall.hpp"
 
 namespace maze_solver {
     template<std::size_t kMazeSize>

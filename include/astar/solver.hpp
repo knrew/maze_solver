@@ -57,7 +57,7 @@ namespace maze_solver {
                 std::cout << "top_node: " << top_node.id << " |  " << std::bitset<8>(maze_[top_node.id].flags) << std::endl;
 #endif
 
-                if (!maze_[top_node.getCoordinate()].HasCheckedWall()) {
+                if (!maze_[top_node.getCoordinate()].IsKnownAllDirection()) {
                     target_ = top_node.getCoordinate();
                     return;
                 }

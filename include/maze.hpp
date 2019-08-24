@@ -5,7 +5,6 @@
 #pragma once
 
 #include "coordinate.hpp"
-#include "wall.hpp"
 #include <deque>
 
 namespace maze_solver {
@@ -16,30 +15,26 @@ namespace maze_solver {
 
         constexpr Maze(const Maze &maze) : std::deque<T>(maze) {}
 
-        static constexpr bool IsOnRange(const Coordinate &c) {
-            return c.x >= 0 && c.x < kMazeSize && c.y >= 0 && c.y < kMazeSize;
+        static constexpr bool IsOnRange(const Coordinate &c) noexcept {
+            return c.IsOnRange(0, kMazeSize);
         }
 
-        static constexpr bool IsOutOfRange(const Coordinate &c) {
-            return !IsOnRange(c);
-        }
-
-        typename std::deque<T>::reference operator[](const Coordinate &c) {
+        typename std::deque<T>::reference operator[](const Coordinate &c) noexcept {
             return std::deque<T>::operator[](Coordinate::Hash<kMazeSize>()(c));
         }
 
-        typename std::deque<T>::const_reference operator[](const Coordinate &c) const {
+        typename std::deque<T>::const_reference operator[](const Coordinate &c) const noexcept {
             return std::deque<T>::operator[](Coordinate::Hash<kMazeSize>()(c));
         }
 
         /*
          * TODO:↓delete
          */
-        typename std::deque<T>::reference operator[](const std::size_t index) {
+        typename std::deque<T>::reference operator[](const std::size_t index) noexcept {
             return std::deque<T>::operator[](index);
         }
 
-        typename std::deque<T>::const_reference operator[](const std::size_t index) const {
+        typename std::deque<T>::const_reference operator[](const std::size_t index) const noexcept {
             return std::deque<T>::operator[](index);
         }
     };

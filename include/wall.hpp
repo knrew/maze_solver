@@ -12,7 +12,7 @@ namespace maze_solver {
             kNorth, kEast, kSouth, kWest,
         };
 
-        uint8_t flags;
+        uint8_t flags:8;
         struct {
             bool north_exists:1;
             bool east_exists:1;
@@ -26,11 +26,11 @@ namespace maze_solver {
 
         Wall() : flags(0b00000000) {}
 
-        bool HasCheckedWall() const {
+        bool IsKnownAllDirection() const noexcept {
             return is_known_north && is_known_east && is_known_south && is_known_west;
         }
 
-        bool WallExists(const Direction d) const {
+        bool WallExists(const Direction d) const noexcept {
             switch (d) {
                 case Direction::kNorth:
                     return north_exists;
