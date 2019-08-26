@@ -12,7 +12,10 @@ namespace maze_solver {
             kNorth, kEast, kSouth, kWest,
         };
 
+    protected:
         std::uint8_t flags:8;
+        
+    public:
         struct {
             bool north_exists:1;
             bool east_exists:1;

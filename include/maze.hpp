@@ -31,11 +31,11 @@ namespace maze_solver {
         /*
          * TODO:↓delete
          */
-        typename std::deque<T>::reference operator[](const std::size_t index) noexcept {
+        typename std::deque<T>::reference GetWithIndex(const std::size_t index) noexcept {
             return std::deque<T>::operator[](index);
         }
 
-        typename std::deque<T>::const_reference operator[](const std::size_t index) const noexcept {
+        typename std::deque<T>::const_reference GetWithIndex(const std::size_t index) const noexcept {
             return std::deque<T>::operator[](index);
         }
     };
