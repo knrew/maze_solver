@@ -50,12 +50,6 @@ namespace maze_solver {
             return IsOnRange(*this, min, max);
         }
 
-        struct Distance {
-            float operator()(const Coordinate &c1, const Coordinate &c2) const noexcept {
-                return std::sqrt(static_cast<float>((c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y)));
-            }
-        };
-
         template<std::size_t kSize>
         struct Hash {
             std::size_t operator()(Coordinate const &c) const noexcept {
