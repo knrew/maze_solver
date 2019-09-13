@@ -13,53 +13,63 @@ namespace maze_solver {
     template<std::size_t kMazeSize>
     class Search {
     public:
-        Search(const Coordinate &start, const Coordinate &goal) :
-//        current_(start),
-        maze_(), astar(start, goal) {
-//            astar.solve(maze_, start);
-//            shortest_ = astar.GetShortestRoute();
-//            CalculateNext();
+        Search() :
+                maze_(),
+                astar_(),
+                shortest_() {
+//            astar_.solve(maze_, start, goal);
+//            shortest_ = astar_.GetShortestRoute();
         }
 
-//        void solve() {
-//            astar.solve(maze_, current_);
-//            shortest_ = astar.GetShortestRoute();
-//            CalculateNext();
-//        }
+        //without maze
+        void reset(const Coordinate &current, const Coordinate &goal) {
+            goal_ = goal;
+            astar_.solve(maze_, current, goal_);
+            shortest_ = astar_.GetShortestRoute();
+        }
 
-//        void SetCurrent(const Coordinate &current) { current_ = current; }
+        Coordinate CalculateNext(const Coordinate &current) {
+            const auto d = GetDirection(current, shortest_[1]);
+            if (maze_[current].WallExists(d)) {
+                astar_.solve(maze_, current, goal_);
+                shortest_ = astar_.GetShortestRoute();
+            }
 
-//        const Coordinate &GetNext() const { return next_; }
+            const auto ret = shortest_[1];
+            if (shortest_[0] == current) {
+                shortest_.pop_front();
+                return std::move(ret);
+            } else {
+                return std::move(shortest_[0]);
+            }
+        }
 
         void SetWall(const Coordinate &c, const Wall &w) { maze_[c] = w; }
 
-//        auto GetShortestRoute() const { return astar.GetShortestRoute(); }
+        Route GetShortestRoute() const { return astar_.GetShortestRoute(); }
 
-//    protected:
-//        void CalculateNext() {
-//            for (std::size_t i = 0; i < shortest_.size(); ++i) {
-//                if (shortest_[i] == current_) {
-//                    next_ = shortest_[i + 1];
-//                }
-//            }
-//
-//            std::cout << "poyo" << std::endl;
-////            return shortest_[shortest_.size() - 1];
-//        }
+        Route unvisited() {
+            Route ret;
+            for (auto it = shortest_.rbegin(); it != shortest_.rend(); ++it) {
+                if (!maze_[*it].IsKnownAllDirection()) { ret.emplace_back(*it); }
+            }
+            return std::move(ret);
+        }
 
+    protected:
         static Wall::Direction GetDirection(const Coordinate &current, const Coordinate &next) {
             if (current.x == next.x && current.y + 1 == next.y) { return Wall::Direction::kNorth; }
             if (current.x + 1 == next.x && current.y == next.y) { return Wall::Direction::kEast; }
             if (current.x == next.x && current.y - 1 == next.y) { return Wall::Direction::kSouth; }
             if (current.x - 1 == next.x && current.y == next.y) { return Wall::Direction::kWest; }
 
+            std::cout << "????" << std::endl;
             return Wall::Direction::kNorth;
         }
 
-//        Coordinate current_;
-//        Coordinate next_;
+        Coordinate goal_;
         Maze<Wall, kMazeSize> maze_;
-        astar::AStar<kMazeSize> astar;
-//        Route shortest_;
+        astar::AStar<kMazeSize> astar_;
+        Route shortest_;
     };
 }

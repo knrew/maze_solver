@@ -38,7 +38,9 @@ int main(const int argc, const char *const *const argv) {
 
     std::cout << "maze data: " << maze_file << std::endl;
 
-    const auto maze = maze_solver::MazeReader<MAZE_SIZE>()(maze_file);
+//    return 0;
+
+    auto maze = maze_solver::MazeReader<MAZE_SIZE>()(maze_file);
     constexpr auto start = maze_solver::Coordinate(START_X, START_Y);
     constexpr auto goal = maze_solver::Coordinate(GOAL_X, GOAL_Y);
 
@@ -47,22 +49,64 @@ int main(const int argc, const char *const *const argv) {
 
     maze_solver::Route search_route;
 
-    maze_solver::Search<MAZE_SIZE> search(start, goal);
+    maze_solver::Search<MAZE_SIZE> search;
+
+//    auto step = [](const auto &s, const auto &g) {
+//        while (current != goal) {
+//            current = search.CalculateNext(current);
+//            maze[current].SetKnownAll(true);
+//            search.SetWall(current, maze[current]);
+//            search_route.emplace_back(current);
+//        }
+//    };
+
+    search.reset(start, goal);
 
     auto current = start;
-    search.maze_[current] = maze[current];
+    maze[current].SetKnownAll(true);
+    search.SetWall(current, maze[current]);
     search_route.emplace_back(current);
 
     while (current != goal) {
-        search.astar.solve(search.maze_, current);
-        current = search.astar.GetShortestRoute()[1];
-        search.maze_[current] = maze[current];
+        current = search.CalculateNext(current);
+        maze[current].SetKnownAll(true);
+        search.SetWall(current, maze[current]);
         search_route.emplace_back(current);
     }
 
-//    const auto search_route = search.astar.GetSearchRoute();
-    search.astar.solve(maze, start);
-    const auto shortest = search.astar.GetShortestRoute();
+    search.reset(start, goal);
+    auto shortest = search.GetShortestRoute();
+
+    auto unvisited = search.unvisited();
+    while (!unvisited.empty()) {
+        search.reset(current, unvisited[0]);
+        while (current != unvisited[0]) {
+            current = search.CalculateNext(current);
+            maze[current].SetKnownAll(true);
+            search.SetWall(current, maze[current]);
+            search_route.emplace_back(current);
+        }
+        search.reset(start, goal);
+        unvisited = search.unvisited();
+    }
+
+    search.reset(current, start);
+    while (current != start) {
+        current = search.CalculateNext(current);
+        maze[current].SetKnownAll(true);
+        search.SetWall(current, maze[current]);
+        search_route.emplace_back(current);
+    }
+
+    search.reset(start, goal);
+    shortest = search.GetShortestRoute();
+
+    auto a = search.unvisited();
+    std::cout << "unvisited | ";
+    for (const auto &e : a) {
+        std::cout << e << ",";
+    }
+    std::cout << std::endl;
 
     std::cout << "search route | ";
     std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });

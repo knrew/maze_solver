@@ -32,6 +32,10 @@ namespace maze_solver {
             return is_known_north && is_known_east && is_known_south && is_known_west;
         }
 
+        void SetKnownAll(const bool is_known) {
+            is_known_north = is_known_east = is_known_south = is_known_west = is_known;
+        }
+
         bool WallExists(const Direction d) const noexcept {
             switch (d) {
                 case Direction::kNorth:
