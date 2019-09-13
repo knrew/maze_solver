@@ -50,16 +50,16 @@ int main(const int argc, const char *const *const argv) {
     maze_solver::Route search_route;
     maze_solver::Search<MAZE_SIZE> search;
 
-    const auto transfer = [&search, &maze, &search_route](const auto &s, const auto &g, bool &ok) {
+    const auto transfer = [&search, &maze, &search_route](const auto &s, const auto &g, bool &ok)
+            -> maze_solver::Coordinate {
         search.ChangeGoal(s, g);
         auto current = s;
-        maze[current].SetKnownAll(true);
-        search.SetWall(current, maze[current]);
+        search.ReachNext(maze[current]);
         search_route.emplace_back(current);
         while (current != g) {
-            current = search.CalculateNext(current, ok);
-            maze[current].SetKnownAll(true);
-            search.SetWall(current, maze[current]);
+            ok = search.CalculateNext();
+            current = search.GetNext();
+            search.ReachNext(maze[current]);
             search_route.emplace_back(current);
             if (!ok) { break; }
         }
@@ -71,9 +71,7 @@ int main(const int argc, const char *const *const argv) {
 
     //start -> goal
     auto current = transfer(start, goal, ok);
-    if (!ok) {
-        std::cout << "this maze cannot solve." << std::endl;
-    }
+    if (!ok) { std::cout << "this maze cannot solve." << std::endl; }
 
     /*
      * 最短経路になりうるもののうち，未訪問の区画を探索
