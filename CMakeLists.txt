@@ -13,6 +13,6 @@ add_definitions(-DGOAL_Y=\(7\))
 
 add_definitions(-DDEFAULT_MAZE_FILE="../../maze_data/maze.txt")
 add_definitions(-DDEFAULT_SEARCH_OUTPUT_FILE="../search.csv")
-add_definitions(-DDEFAULT_SHOTEST_OUTPUT_FILE="../shortest.csv")
+add_definitions(-DDEFAULT_SHORTEST_OUTPUT_FILE="../shortest.csv")
 
 #add_definitions(-DASTAR_SOLVER_DEBUG)

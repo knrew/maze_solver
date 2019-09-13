@@ -115,7 +115,7 @@ namespace maze_solver {
 #endif
             }
 
-            auto CalculateOptimalRoute() const {
+            auto CalculateShortestRoute() const {
                 Route optimal_route;
 //                if (!has_found_answer_) { return optimal_route; }
 

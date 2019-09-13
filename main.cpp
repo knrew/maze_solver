@@ -35,11 +35,11 @@ int main(const int argc, const char *const *const argv) {
         }
     }();
 
-    const auto optimal_route_output_file = [&args]() {
+    const auto shortest_route_output_file = [&args]() {
         try {
             return args.at(3);
         } catch (std::exception &e) {
-            return std::string(DEFAULT_SHOTEST_OUTPUT_FILE);
+            return std::string(DEFAULT_SHORTEST_OUTPUT_FILE);
         }
     }();
 
@@ -71,17 +71,17 @@ int main(const int argc, const char *const *const argv) {
               << 0.000001f * std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count() << std::endl;
 
     const auto search_route = solver.search_route;
-    const auto optimal_route = solver.CalculateOptimalRoute();
+    const auto shortest_route = solver.CalculateShortestRoute();
 
-    std::cout << "search route  | ";
+    std::cout << "search route | ";
     std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });
     std::cout << std::endl;
-    std::cout << "optimal route | ";
-    std::for_each(optimal_route.cbegin(), optimal_route.cend(), [](const auto &c) { std::cout << c << ","; });
+    std::cout << "shortest route | ";
+    std::for_each(shortest_route.cbegin(), shortest_route.cend(), [](const auto &c) { std::cout << c << ","; });
     std::cout << std::endl;
 
     maze_solver::RouteWriter()(search_route_output_file, search_route);
-    maze_solver::RouteWriter()(optimal_route_output_file, optimal_route);
+    maze_solver::RouteWriter()(shortest_route_output_file, shortest_route);
 
     return 0;
 }
