@@ -41,13 +41,13 @@ namespace maze_solver {
             }
 
             void push(const typename NodeContainer::value_type &x) {
-                const auto id = Coordinate::Hash<kMazeSize>()(x.getCoordinate());
+                const auto id = Coordinate::Hash<kMazeSize>()(x.GetCoordinate());
                 ids_.push_back(id);
                 std::push_heap(ids_.begin(), ids_.end(), comp_);
             }
 
             void push(typename NodeContainer::value_type &&x) {
-                const auto id = Coordinate::Hash<kMazeSize>()(x.getCoordinate());
+                const auto id = Coordinate::Hash<kMazeSize>()(x.GetCoordinate());
                 ids_.push_back(id);
                 std::push_heap(ids_.begin(), ids_.end(), comp_);
             }

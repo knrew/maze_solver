@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "../common/mymath.hpp"
+#include "../common/utility.hpp"
 #include "../common/route.hpp"
 #include "../common/maze.hpp"
 #include "../common/wall.hpp"
@@ -23,24 +23,22 @@ namespace maze_solver {
         class Solver {
         public:
             explicit Solver(const Coordinate &start, const Coordinate &goal) :
-                    start_(start), goal_(goal),
-                    nodes_(),
-                    open_(nodes_),
-                    has_no_answer_(false) {
+                    start_(start), goal_(goal), search_route_(), shortest_route_() {}
 
-            }
-
-            void solve(const Maze<Wall, kMazeSize> &maze) {
+            bool solve(const Maze<Wall, kMazeSize> &maze) {
 #if defined(ASTAR_SOLVER_DEBUG)
                 std::cout << "solver start." << std::endl;
 #endif
 
-                open_.clear();
-                nodes_[start_].setCostF(CalculateHeuristic(start_));
-                nodes_[start_].toOpen();
+                Nodes<kMazeSize> nodes_;
+                OpenList<kMazeSize> open_(nodes_);
+                bool has_no_answer_ = false;
+
+                nodes_[start_].SetCostF(CalculateHeuristic(start_));
+                nodes_[start_].ToOpen();
                 open_.emplace(nodes_[start_]);
 
-                search_route.clear();
+                search_route_.clear();
                 while (true) {
                     if (open_.empty()) {
                         has_no_answer_ = true;
@@ -48,7 +46,7 @@ namespace maze_solver {
                     }
 
                     const auto top_node = open_.top();
-                    search_route.emplace_back(top_node.getCoordinate());
+                    search_route_.emplace_back(top_node.GetCoordinate());
                     open_.pop();
 
 #if defined(ASTAR_SOLVER_DEBUG)
@@ -67,7 +65,7 @@ namespace maze_solver {
 
                     static std::deque<Coordinate> adjacent_node_coordinates;
                     adjacent_node_coordinates.clear();
-                    adjacent_node_coordinates = GetAdjacentNodeCoordinates(top_node, maze[top_node.getCoordinate()]);
+                    adjacent_node_coordinates = GetAdjacentNodeCoordinates(top_node, maze[top_node.GetCoordinate()]);
 
 #if defined(ASTAR_SOLVER_DEBUG)
                     std::cout << "adj:";
@@ -80,15 +78,15 @@ namespace maze_solver {
 #endif
 
                         const auto update_node = [&]() {
-                            nodes_[m].setParentCoordinate(top_node.getCoordinate());
-                            nodes_[m].setCostF(f_tmp);
-                            nodes_[m].toOpen();
+                            nodes_[m].SetParentCoordinate(top_node.GetCoordinate());
+                            nodes_[m].SetCostF(f_tmp);
+                            nodes_[m].ToOpen();
                             open_.emplace(nodes_[m]);
                         };
 
-                        if (!nodes_[m].isOpen() && !nodes_[m].isClose()) {
+                        if (!nodes_[m].IsOpen() && !nodes_[m].IsClose()) {
                             update_node();
-                        } else if (f_tmp < nodes_[m].getCostF()) {
+                        } else if (f_tmp < nodes_[m].GetCostF()) {
                             update_node();
                         } else {}
                     }
@@ -97,7 +95,7 @@ namespace maze_solver {
                     std::cout << std::endl;
 #endif
 
-                    nodes_[top_node.getCoordinate()].toClose();
+                    nodes_[top_node.GetCoordinate()].ToClose();
 
 #if defined(ASTAR_SOLVER_DEBUG)
                     std::cout << "-----" << std::endl;
@@ -108,26 +106,27 @@ namespace maze_solver {
 #if defined(ASTAR_SOLVER_DEBUG)
                     std::cout << "this maze cannot solve." << std::endl;
 #endif
+                    return false;
                 }
+
+                shortest_route_.clear();
+
+                Node n = nodes_[goal_];
+                while (n.GetCoordinate() != start_) {
+                    shortest_route_.emplace_front(n.GetCoordinate());
+                    n = nodes_[n.GetParentCoordinate()];
+                }
+                shortest_route_.emplace_front(nodes_[start_].GetCoordinate());
 
 #if defined(ASTAR_SOLVER_DEBUG)
                 std::cout << "solver finish." << std::endl;
 #endif
+                return true;
             }
 
-            auto CalculateShortestRoute() const {
-                Route optimal_route;
-//                if (!has_found_answer_) { return optimal_route; }
+            auto GetSearchRoute() const { return std::move(search_route_); }
 
-                Node n = nodes_[goal_];
-                while (n.getCoordinate() != start_) {
-                    optimal_route.emplace_front(n.getCoordinate());
-                    n = nodes_[n.getParentCoordinate()];
-                }
-                optimal_route.emplace_front(nodes_[start_].getCoordinate());
-
-                return std::move(optimal_route);
-            }
+            auto GetShortestRoute() const { return std::move(shortest_route_); }
 
         private:
             auto GetAdjacentNodeCoordinates(const Node &node, const Wall wall) {
@@ -135,7 +134,7 @@ namespace maze_solver {
 
                 for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                                      Wall::Direction::kSouth, Wall::Direction::kWest}) {
-                    auto c = node.getCoordinate();
+                    auto c = node.GetCoordinate();
                     if (!wall.WallExists(d)) {
                         switch (d) {
                             case Wall::Direction::kNorth:
@@ -162,8 +161,8 @@ namespace maze_solver {
             }
 
             float CalculateNextCostF(const Node &current, const Coordinate &next) const {
-                const auto h = CalculateHeuristic(current.getCoordinate());
-                const auto g = current.getCostF() - h;
+                const auto h = CalculateHeuristic(current.GetCoordinate());
+                const auto g = current.GetCostF() - h;
                 const auto f = g + CalculateHeuristic(next) + 1;
                 return f;
             }
@@ -173,18 +172,12 @@ namespace maze_solver {
             }
 
             bool IsGoal(const Node &node) const {
-                return node.getCoordinate() == goal_;
+                return node.GetCoordinate() == goal_;
             }
 
-//            Maze<Wall, kMazeSize> maze_;
             const Coordinate start_, goal_;
-            Nodes<kMazeSize> nodes_;
-            OpenList<kMazeSize> open_;
-            bool has_no_answer_;
-
-        public:
-            Route search_route;
-            Route shortest_route;
+            Route search_route_;
+            Route shortest_route_;
         };
     }
 }

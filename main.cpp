@@ -6,17 +6,10 @@
 #include "include/io/maze_reader.hpp"
 #include "include/io/route_writer.hpp"
 
+template<class TMaze>
+void print_maze(const TMaze &, const std::size_t &);
+
 int main(const int argc, const char *const *const argv) {
-    maze_solver::Wall w;
-    w.flags = 0x9;
-    std::cout << std::boolalpha
-              << w.north_exists << ","
-              << w.east_exists << ","
-              << w.south_exists << ","
-              << w.west_exists << std::endl;
-
-//    return 0;
-
     const std::vector<std::string> args(argv, argv + argc);
 
     const auto maze_file = [&args]() {
@@ -50,28 +43,24 @@ int main(const int argc, const char *const *const argv) {
     constexpr auto goal = maze_solver::Coordinate(GOAL_X, GOAL_Y);
 
 //    std::for_each(maze.cbegin(), maze.cend(), [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
-    for (int8_t y = MAZE_SIZE - 1; y >= 0; --y) {
-        for (int8_t x = 0; x < MAZE_SIZE; ++x) {
-            printf("%x ", maze[{x, y}].flags);
-        }
-        std::cout << std::endl;
-    }
+    print_maze(maze, MAZE_SIZE);
 
     std::cout << "start: " << start << std::endl;
     std::cout << "goal: " << goal << std::endl;
 
+    const auto s = std::chrono::system_clock::now();
+
     maze_solver::a_star::Solver<MAZE_SIZE> solver(start, goal);
 
-    auto s = std::chrono::system_clock::now();
-//    for (int i = 0; i < 30; ++i) {
-    solver.solve(maze);
-//    }
-    auto e = std::chrono::system_clock::now();
-    std::cout << "calculation time[ms]: "
-              << 0.000001f * std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count() << std::endl;
+    if (!solver.solve(maze)) {
+        std::cout << "this maze cannot solve." << std::endl;
+    }
+    const auto search_route = solver.GetSearchRoute();
+    const auto shortest_route = solver.GetShortestRoute();
 
-    const auto search_route = solver.search_route;
-    const auto shortest_route = solver.CalculateShortestRoute();
+    const auto e = std::chrono::system_clock::now();
+    const auto ms = 0.000001f * std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count();
+    std::cout << "calculation time[ms]: " << ms << std::endl;
 
     std::cout << "search route | ";
     std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });
@@ -84,4 +73,14 @@ int main(const int argc, const char *const *const argv) {
     maze_solver::RouteWriter()(shortest_route_output_file, shortest_route);
 
     return 0;
+}
+
+template<class TMaze>
+void print_maze(const TMaze &maze, const std::size_t &maze_size) {
+    for (int8_t y = maze_size - 1; y >= 0; --y) {
+        for (int8_t x = 0; x < maze_size; ++x) {
+            printf("%x ", maze[{x, y}].flags);
+        }
+        std::cout << std::endl;
+    }
 }

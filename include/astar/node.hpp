@@ -24,25 +24,25 @@ namespace maze_solver {
         public:
             Node() : coordinate_(), parent_coordinate_(), cost_f_(), state_(State::kNone) {}
 
-            const Coordinate &getCoordinate() const noexcept { return coordinate_; }
+            const Coordinate &GetCoordinate() const noexcept { return coordinate_; }
 
-            void setCoordinate(const Coordinate &c) noexcept { coordinate_ = c; }
+            void SetCoordinate(const Coordinate &c) noexcept { coordinate_ = c; }
 
-            const Coordinate &getParentCoordinate() const noexcept { return parent_coordinate_; }
+            const Coordinate &GetParentCoordinate() const noexcept { return parent_coordinate_; }
 
-            void setParentCoordinate(const Coordinate &c) noexcept { parent_coordinate_ = c; }
+            void SetParentCoordinate(const Coordinate &c) noexcept { parent_coordinate_ = c; }
 
-            float getCostF() const noexcept { return cost_f_; }
+            float GetCostF() const noexcept { return cost_f_; }
 
-            void setCostF(const float cost_f) noexcept { cost_f_ = cost_f; }
+            void SetCostF(const float cost_f) noexcept { cost_f_ = cost_f; }
 
-            bool isOpen() const noexcept { return state_ == State::kOpen; }
+            bool IsOpen() const noexcept { return state_ == State::kOpen; }
 
-            bool isClose() const noexcept { return state_ == State::kClose; }
+            bool IsClose() const noexcept { return state_ == State::kClose; }
 
-            void toOpen() noexcept { state_ = State::kOpen; }
+            void ToOpen() noexcept { state_ = State::kOpen; }
 
-            void toClose() noexcept { state_ = State::kClose; }
+            void ToClose() noexcept { state_ = State::kClose; }
 
         protected:
             Coordinate coordinate_;
@@ -58,7 +58,7 @@ namespace maze_solver {
                 for (std::size_t i = 0; i < kMazeSize; i++) {
                     for (std::size_t j = 0; j < kMazeSize; j++) {
                         const Coordinate c(i, j);
-                        Maze<Node, kMazeSize>::operator[](c).setCoordinate(c);
+                        Maze<Node, kMazeSize>::operator[](c).SetCoordinate(c);
                     }
                 }
             }
