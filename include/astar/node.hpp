@@ -9,7 +9,7 @@
 #include "../common/maze.hpp"
 
 namespace maze_solver {
-    namespace a_star {
+    namespace astar {
         class Node {
         public:
             struct Compare {

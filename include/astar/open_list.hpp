@@ -14,7 +14,7 @@
  * priority queue(int)
  */
 namespace maze_solver {
-    namespace a_star {
+    namespace astar {
         template<std::size_t kMazeSize>
         class OpenList {
         public:

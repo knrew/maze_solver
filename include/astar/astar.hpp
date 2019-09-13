@@ -18,11 +18,11 @@
 #endif
 
 namespace maze_solver {
-    namespace a_star {
+    namespace astar {
         template<const std::size_t kMazeSize>
-        class Solver {
+        class AStar {
         public:
-            explicit Solver(const Coordinate &start, const Coordinate &goal) :
+            explicit AStar(const Coordinate &start, const Coordinate &goal) :
                     start_(start), goal_(goal), search_route_(), shortest_route_() {}
 
             bool solve(const Maze<Wall, kMazeSize> &maze) {

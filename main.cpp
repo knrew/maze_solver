@@ -2,7 +2,7 @@
 #include <bitset>
 #include <vector>
 #include <chrono>
-#include "include/astar/solver.hpp"
+#include "include/astar/astar.hpp"
 #include "include/io/maze_reader.hpp"
 #include "include/io/route_writer.hpp"
 
@@ -50,7 +50,7 @@ int main(const int argc, const char *const *const argv) {
 
     const auto s = std::chrono::system_clock::now();
 
-    maze_solver::a_star::Solver<MAZE_SIZE> solver(start, goal);
+    maze_solver::astar::AStar<MAZE_SIZE> solver(start, goal);
 
     if (!solver.solve(maze)) {
         std::cout << "this maze cannot solve." << std::endl;
