@@ -8,7 +8,7 @@
 int main(const int argc, const char *const *const argv) {
     const std::vector<std::string> args(argv, argv + argc);
 
-    const auto maze_data_file_name = [&]() {
+    const auto maze_file = [&args]() {
         try {
             return args.at(1);
         } catch (std::exception &e) {
@@ -16,50 +16,35 @@ int main(const int argc, const char *const *const argv) {
         }
     }();
 
-    const auto search_route_file_name = [&]() {
+    const auto search_route_output_file = [&args]() {
         try {
             return args.at(2);
         } catch (std::exception &e) {
-            return std::string(getenv("HOME")) + "/micromouse/search_route.csv";
+            return std::string(getenv("HOME")) + "/micromouse/maze_solver/search_route.csv";
         }
     }();
 
-    const auto opt_route_file_name = [&]() {
+    const auto optimal_route_output_file = [&args]() {
         try {
             return args.at(3);
         } catch (std::exception &e) {
-            return std::string(getenv("HOME")) + "/micromouse/optimal_route.csv";
+            return std::string(getenv("HOME")) + "/micromouse/maze_solver/optimal_route.csv";
         }
     }();
 
-    std::cout << "maze data: " << maze_data_file_name << std::endl;
+    std::cout << "maze data: " << maze_file << std::endl;
 
-    maze_solver::Maze<maze_solver::Wall, MAZE_SIZE> maze;
-    maze_solver::Coordinate start_coordinate, goal_coordinate;
-    {
-        maze_solver::MazeReader<MAZE_SIZE> reader(maze_data_file_name);
-        reader.Read();
-        maze = reader.GetMaze();
-        start_coordinate = reader.GetStart();
-        goal_coordinate = reader.GetGoal();
+    const auto maze = maze_solver::MazeReader<MAZE_SIZE>()(maze_file);
+    const auto start = maze_solver::Coordinate(0, 0);
+    const auto goal = maze_solver::Coordinate(7, 7);
 
-        std::for_each(maze.cbegin(), maze.cend(),
-                      [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
+    std::for_each(maze.cbegin(), maze.cend(), [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
 
-        for (auto y = MAZE_SIZE - 1; y >= 0; --y) {
-            for (auto x = 0; x < MAZE_SIZE; ++x) {
-                printf("%x ", maze[maze_solver::Coordinate(x, y)].flags);
-            }
-            std::cout << std::endl;
+    std::cout << "start: " << start << std::endl;
+    std::cout << "goal: " << goal << std::endl;
 
-        }
-    }
-    
-    std::cout << "start: " << start_coordinate << std::endl;
-    std::cout << "goal: " << goal_coordinate << std::endl;
-    
-    maze_solver::a_star::Solver<MAZE_SIZE>::Route search_route;
-    maze_solver::a_star::Solver<MAZE_SIZE> a_star(start_coordinate, goal_coordinate);
+    maze_solver::Route search_route;
+    maze_solver::a_star::Solver<MAZE_SIZE> a_star(start, goal);
 
     while (true) {
         if (a_star.HasFoundAnswer()) {
@@ -90,8 +75,8 @@ int main(const int argc, const char *const *const argv) {
     std::for_each(optimal_route.cbegin(), optimal_route.cend(), [](const auto &c) { std::cout << c << ","; });
     std::cout << std::endl;
 
-    maze_solver::RouteWriter()(search_route_file_name, search_route);
-    maze_solver::RouteWriter()(opt_route_file_name, optimal_route);
+    maze_solver::RouteWriter()(search_route_output_file, search_route);
+    maze_solver::RouteWriter()(optimal_route_output_file, optimal_route);
 
     return 0;
 }

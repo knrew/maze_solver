@@ -12,11 +12,10 @@
 namespace maze_solver {
     class RouteWriter {
     public:
-        template<class TContainer>
-        void operator()(const std::string &file_name, const TContainer &route) {
+        void operator()(const std::string &file_name, const Route &r) {
             std::ofstream output(file_name);
             output << "x,y" << std::endl;
-            std::for_each(route.cbegin(), route.cend(),
+            std::for_each(r.cbegin(), r.cend(),
                           [&output](const auto &c) { output << +c.x << "," << +c.y << std::endl; });
             output.close();
         }

@@ -6,9 +6,10 @@
 #include <cstdint>
 #include "../common/maze.hpp"
 #include "../common/wall.hpp"
+#include "../common/route.hpp"
 #include "node.hpp"
 #include "open_list.hpp"
-#include "../utility/mymath.hpp"
+#include "../common/mymath.hpp"
 
 #define ENABLE_COUT
 
@@ -24,8 +25,6 @@ namespace maze_solver {
         template<std::size_t kMazeSize>
         class Solver {
         public:
-            using Route = std::deque<Coordinate>;
-
             explicit Solver(const Coordinate &start, const Coordinate &goal) :
                     start_(start),
                     goal_(goal),
@@ -133,8 +132,8 @@ namespace maze_solver {
                 CalculateNextNode();
             }
 
-            const auto &CalculateOptimalRoute() const {
-                static Route optimal_route;
+            auto CalculateOptimalRoute() const {
+                Route optimal_route;
                 optimal_route.clear();
 
                 if (!has_found_answer_) { return optimal_route; }
@@ -146,7 +145,7 @@ namespace maze_solver {
                 }
                 optimal_route.emplace_front(nodes_[start_].getCoordinate());
 
-                return optimal_route;
+                return std::move(optimal_route);
             }
 
             const Coordinate &GetNextNodeCoordinate() const { return target_; }

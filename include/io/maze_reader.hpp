@@ -16,45 +16,44 @@ namespace maze_solver {
     template<std::size_t kMazeSize>
     class MazeReader {
     public:
-        explicit MazeReader(std::string file_name) : file_name_(std::move(file_name)) {
-            start_.x = start_.y = 0;
-            goal_.x = goal_.y = 7;
-        }
+        Maze <Wall, kMazeSize> operator()(const std::string &file_name) {
+            Maze<Wall, kMazeSize> maze;
 
-        void Read() {
-            std::ifstream ifs(file_name_);
-            std::string line;
+            std::ifstream ifs(file_name);
 
-            std::size_t y = kMazeSize - 1;
-            while (getline(ifs, line)) {
-                const auto walls = Split(line, ' ');
-                for (std::size_t x = 0; x < walls.size(); ++x) {
-                    if (walls[x] == "") { continue; }
-                    maze_[Coordinate(x, y)].flags = std::stoi(walls[x], nullptr, 16);
+            std::vector<std::string> raw_maze;
+
+            {
+                std::string line;
+                while (getline(ifs, line)) {
+                    raw_maze.emplace_back(line);
+                }
+            }
+
+            std::size_t y = raw_maze.size() - 1;
+            for (const auto &e : raw_maze) {
+                const auto line = Split(e, ' ');
+                for (std::size_t x = 0; x < line.size(); ++x) {
+                    if (line[x] == "") { continue; }
+                    maze[Coordinate(x, y)].flags = std::stoi(line[x], nullptr, 16);
                 }
                 --y;
             }
+
+            return std::move(maze);
         }
 
-        auto GetMaze() const { return maze_; }
-
-        auto GetStart() const { return start_; }
-
-        auto GetGoal() const { return goal_; }
-
+    private:
         static std::vector<std::string> Split(const std::string &input, const char delimiter) {
             std::istringstream stream(input);
-            std::string field;
             std::vector<std::string> result;
+
+            std::string field;
             while (getline(stream, field, delimiter)) {
                 result.emplace_back(field);
             }
-            return result;
-        }
 
-        const std::string file_name_;
-        Maze <Wall, kMazeSize> maze_;
-        Coordinate start_;
-        Coordinate goal_;
+            return std::move(result);
+        }
     };
 }
