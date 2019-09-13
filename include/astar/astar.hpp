@@ -25,18 +25,17 @@ namespace maze_solver {
             explicit AStar(const Coordinate &start, const Coordinate &goal) :
                     start_(start), goal_(goal), search_route_(), shortest_route_() {}
 
-            bool solve(const Maze<Wall, kMazeSize> &maze) {
+            bool solve(const Maze<Wall, kMazeSize> &maze, const Coordinate &start) {
 #if defined(ASTAR_SOLVER_DEBUG)
                 std::cout << "solver start." << std::endl;
 #endif
-
                 Nodes<kMazeSize> nodes_;
                 OpenList<kMazeSize> open_(nodes_);
                 bool has_no_answer_ = false;
 
-                nodes_[start_].SetCostF(CalculateHeuristic(start_));
-                nodes_[start_].ToOpen();
-                open_.emplace(nodes_[start_]);
+                nodes_[start].SetCostF(CalculateHeuristic(start));
+                nodes_[start].ToOpen();
+                open_.emplace(nodes_[start]);
 
                 search_route_.clear();
                 while (true) {
@@ -112,11 +111,11 @@ namespace maze_solver {
                 shortest_route_.clear();
 
                 Node n = nodes_[goal_];
-                while (n.GetCoordinate() != start_) {
+                while (n.GetCoordinate() != start) {
                     shortest_route_.emplace_front(n.GetCoordinate());
                     n = nodes_[n.GetParentCoordinate()];
                 }
-                shortest_route_.emplace_front(nodes_[start_].GetCoordinate());
+                shortest_route_.emplace_front(nodes_[start].GetCoordinate());
 
 #if defined(ASTAR_SOLVER_DEBUG)
                 std::cout << "solver finish." << std::endl;
