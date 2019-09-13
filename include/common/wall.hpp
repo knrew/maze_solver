@@ -8,14 +8,13 @@
 
 namespace maze_solver {
     union Wall {
+    public:
         enum class Direction : std::uint8_t {
             kNorth, kEast, kSouth, kWest,
         };
 
-    protected:
         std::uint8_t flags:8;
-        
-    public:
+
         struct {
             bool north_exists:1;
             bool east_exists:1;
@@ -43,6 +42,8 @@ namespace maze_solver {
                     return south_exists;
                 case Direction::kWest:
                     return west_exists;
+                default:
+                    return true;
             }
         }
     };

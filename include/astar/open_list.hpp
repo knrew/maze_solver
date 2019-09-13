@@ -7,7 +7,7 @@
 #include <deque>
 #include <algorithm>
 #include <functional>
-#include "../maze.hpp"
+#include "../common/maze.hpp"
 #include "node.hpp"
 
 /*
@@ -26,7 +26,7 @@ namespace maze_solver {
                     ids_(),
                     nodes_(nodes),
                     comp_([&](const std::size_t &a, const std::size_t &b) {
-                        return Node::Compare()(nodes_[a], nodes_[b]);
+                        return Node::Compare()(nodes_.GetWithIndex(a), nodes_.GetWithIndex(b));
                     }) {};
 
             bool empty() const { return ids_.empty(); }
@@ -35,7 +35,7 @@ namespace maze_solver {
 
             typename NodeContainer::const_reference top() const {
                 __glibcxx_requires_nonempty();
-                return nodes_[ids_.front()];
+                return nodes_.GetWithIndex(ids_.front());
             }
 
             void push(const typename NodeContainer::value_type &x) {

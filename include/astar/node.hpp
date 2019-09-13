@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cstdint>
-#include "../coordinate.hpp"
-#include "../maze.hpp"
+#include "../common/coordinate.hpp"
+#include "../common/maze.hpp"
 
 namespace maze_solver {
     namespace a_star {

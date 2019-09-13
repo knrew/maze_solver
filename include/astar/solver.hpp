@@ -4,12 +4,13 @@
 #pragma once
 
 #include <cstdint>
-#include "../maze.hpp"
-#include "../wall.hpp"
+#include "../common/maze.hpp"
+#include "../common/wall.hpp"
 #include "node.hpp"
 #include "open_list.hpp"
+#include "../utility/mymath.hpp"
 
-//#define ENABLE_COUT
+#define ENABLE_COUT
 
 #if defined(ENABLE_COUT)
 
@@ -61,7 +62,8 @@ namespace maze_solver {
                 }
 
 #if defined(ENABLE_COUT)
-                std::cout << "top_node: " << top_node.id << " |  " << std::bitset<8>(maze_[top_node.id].flags) << std::endl;
+                std::cout << "top_node: " << top_node.getCoordinate() << " |  "
+                          << std::bitset<8>(maze_[top_node.getCoordinate()].flags) << std::endl;
 #endif
 
                 if (!maze_[top_node.getCoordinate()].IsKnownAllDirection()) {
@@ -91,7 +93,7 @@ namespace maze_solver {
                                 break;
                         }
 
-                        if (maze_.IsOnRange(c)) {
+                        if (math::IsOnRange(c, {0, 0}, {kMazeSize - 1, kMazeSize - 1})) {
                             adjacent_node_coordinates.emplace_back(c);
                         }
                     }
@@ -170,7 +172,7 @@ namespace maze_solver {
             }
 
             float CalculateHeuristic(const Coordinate &c) const {
-                return Coordinate::Distance()(c, goal_);
+                return std::sqrt((c.x - goal_.x) * (c.x - goal_.x) + (c.y - goal_.y) * (c.y - goal_.y));
             }
 
             bool IsGoal(const Node &node) const {

@@ -16,6 +16,8 @@ namespace maze_solver {
 
         constexpr Coordinate(const int8_t x, const int8_t y) : x(x), y(y) {}
 
+        constexpr Coordinate(const std::initializer_list<int8_t> &list) : x(*list.begin()), y(*(list.begin() + 1)) {}
+
         constexpr Coordinate(const Coordinate &c) = default;
 
         constexpr bool operator==(const Coordinate &c) const noexcept {
@@ -26,28 +28,20 @@ namespace maze_solver {
             return !(*this == c);
         }
 
-        constexpr bool operator>(const Coordinate &c) const noexcept {
-            return this->x > c.x && this->y > c.y;
-        }
-
-        constexpr bool operator>=(const Coordinate &c) const noexcept {
-            return this->x >= c.x && this->y >= c.y;
-        }
-
         constexpr bool operator<(const Coordinate &c) const noexcept {
-            return !(*this >= c);
+            return this->x < c.x && this->y < c.y;
         }
 
         constexpr bool operator<=(const Coordinate &c) const noexcept {
-            return !(*this > c);
+            return this->x <= c.x && this->y <= c.y;
         }
 
-        static constexpr bool IsOnRange(const Coordinate &c, const std::size_t min, const std::size_t max) noexcept {
-            return c.x >= min && c.x < max && c.y >= min && c.y < max;
+        constexpr bool operator>(const Coordinate &c) const noexcept {
+            return !(*this <= c);
         }
 
-        bool IsOnRange(const std::size_t min, const std::size_t max) const noexcept {
-            return IsOnRange(*this, min, max);
+        constexpr bool operator>=(const Coordinate &c) const noexcept {
+            return !(*this < c);
         }
 
         template<std::size_t kSize>

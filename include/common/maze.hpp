@@ -16,10 +16,6 @@ namespace maze_solver {
 
         constexpr Maze(const Maze &maze) : std::deque<T>(maze) {}
 
-        static constexpr bool IsOnRange(const Coordinate &c) noexcept {
-            return c.IsOnRange(0, kMazeSize);
-        }
-
         typename std::deque<T>::reference operator[](const Coordinate &c) noexcept {
             return std::deque<T>::operator[](Coordinate::Hash<kMazeSize>()(c));
         }
