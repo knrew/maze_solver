@@ -13,16 +13,9 @@ namespace maze_solver {
     template<std::size_t kMazeSize>
     class Search {
     public:
-        Search() :
-                maze_(),
-                astar_(),
-                shortest_() {
-//            astar_.solve(maze_, start, goal);
-//            shortest_ = astar_.GetShortestRoute();
-        }
+        Search() : goal_(), maze_(), astar_(), shortest_() {}
 
-        //without maze
-        void reset(const Coordinate &current, const Coordinate &goal) {
+        void ChangeGoal(const Coordinate &current, const Coordinate &goal) {
             goal_ = goal;
             astar_.solve(maze_, current, goal_);
             shortest_ = astar_.GetShortestRoute();
@@ -50,11 +43,12 @@ namespace maze_solver {
 
         Route GetShortestRoute() const { return astar_.GetShortestRoute(); }
 
-        Route unvisited() {
-            Route ret;
-            for (auto it = shortest_.rbegin(); it != shortest_.rend(); ++it) {
-                if (!maze_[*it].IsKnownAllDirection()) { ret.emplace_back(*it); }
+        auto FindUnvisitedBlocks() {
+            std::deque<Coordinate> ret;
+            for (const auto &c : shortest_) {
+                if (!maze_[c].IsKnownAllDirection()) { ret.emplace_back(c); }
             }
+
             return std::move(ret);
         }
 

@@ -51,7 +51,7 @@ int main(const int argc, const char *const *const argv) {
     maze_solver::Search<MAZE_SIZE> search;
 
     const auto transfer = [&search, &maze, &search_route](const auto &s, const auto &g, bool &ok) {
-        search.reset(s, g);
+        search.ChangeGoal(s, g);
         auto current = s;
         maze[current].SetKnownAll(true);
         search.SetWall(current, maze[current]);
@@ -78,17 +78,17 @@ int main(const int argc, const char *const *const argv) {
     /*
      * 最短経路になりうるもののうち，未訪問の区画を探索
      */
-    search.reset(start, goal);
+    search.ChangeGoal(start, goal);
     {
-        auto unvisited = search.unvisited();
+        auto unvisited = search.FindUnvisitedBlocks();
         auto target = unvisited[0];
         while (!unvisited.empty()) {
             std::cout << current << std::endl;
 
             current = transfer(current, target, ok);
             if (ok) {
-                search.reset(start, goal);
-                unvisited = search.unvisited();
+                search.ChangeGoal(start, goal);
+                unvisited = search.FindUnvisitedBlocks();
                 target = unvisited[0];
             } else {
                 if (unvisited.size() >= 2) {
@@ -105,11 +105,11 @@ int main(const int argc, const char *const *const argv) {
      */
     current = transfer(current, start, ok);
 
-    search.reset(start, goal);
+    search.ChangeGoal(start, goal);
     const auto shortest = search.GetShortestRoute();
 
     {
-        auto u = search.unvisited();
+        auto u = search.FindUnvisitedBlocks();
         std::cout << "unvisited | ";
         std::for_each(u.cbegin(), u.cend(), [](const auto &c) { std::cout << c << ","; });
         std::cout << std::endl;
