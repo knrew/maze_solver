@@ -11,9 +11,9 @@ add_definitions(-DSTART_Y=\(0\))
 add_definitions(-DGOAL_X=\(7\))
 add_definitions(-DGOAL_Y=\(7\))
 
-add_definitions(-DDEFAULT_MAZE_FILE="/home/ryunosuke/micromouse/maze_data/maze0000.txt")
-add_definitions(-DDEFAULT_SEARCH_OUTPUT_FILE="/home/ryunosuke/micromouse/maze_solver/search.csv")
-add_definitions(-DDEFAULT_SHORTEST_OUTPUT_FILE="/home/ryunosuke/micromouse/maze_solver/shortest.csv")
+add_definitions(-DDEFAULT_MAZE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/../maze_data/maze0000.txt")
+add_definitions(-DDEFAULT_SEARCH_OUTPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/search.csv")
+add_definitions(-DDEFAULT_SHORTEST_OUTPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/shortest.csv")
 
 #add_definitions(-DASTAR_SOLVER_DEBUG)
 
