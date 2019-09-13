@@ -34,7 +34,6 @@ namespace maze_solver {
 #if defined(ASTAR_SOLVER_DEBUG)
                 std::cout << "solver start." << std::endl;
 #endif
-                maze_ = maze;
 
                 open_.clear();
                 nodes_[start_].setCostF(CalculateHeuristic(start_));
@@ -68,7 +67,7 @@ namespace maze_solver {
 
                     static std::deque<Coordinate> adjacent_node_coordinates;
                     adjacent_node_coordinates.clear();
-                    adjacent_node_coordinates = GetAdjacentNodeCoordinates(top_node);
+                    adjacent_node_coordinates = GetAdjacentNodeCoordinates(top_node, maze[top_node.getCoordinate()]);
 
 #if defined(ASTAR_SOLVER_DEBUG)
                     std::cout << "adj:";
@@ -131,13 +130,13 @@ namespace maze_solver {
             }
 
         private:
-            auto GetAdjacentNodeCoordinates(const Node &node) {
+            auto GetAdjacentNodeCoordinates(const Node &node, const Wall wall) {
                 std::deque<Coordinate> adjs;
 
                 for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                                      Wall::Direction::kSouth, Wall::Direction::kWest}) {
                     auto c = node.getCoordinate();
-                    if (!maze_[node.getCoordinate()].WallExists(d)) {
+                    if (!wall.WallExists(d)) {
                         switch (d) {
                             case Wall::Direction::kNorth:
                                 ++c.y;
@@ -177,7 +176,7 @@ namespace maze_solver {
                 return node.getCoordinate() == goal_;
             }
 
-            Maze<Wall, kMazeSize> maze_;
+//            Maze<Wall, kMazeSize> maze_;
             const Coordinate start_, goal_;
             Nodes<kMazeSize> nodes_;
             OpenList<kMazeSize> open_;

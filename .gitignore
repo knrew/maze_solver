@@ -3,6 +3,6 @@
 
 cmake-build-debug/
 
-optimal_route.csv
+search.csv
 
-search_route.csv
+shortest.csv

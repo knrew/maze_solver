@@ -1,18 +1,29 @@
 #include <iostream>
 #include <bitset>
 #include <vector>
+#include <chrono>
 #include "include/astar/solver.hpp"
 #include "include/io/maze_reader.hpp"
 #include "include/io/route_writer.hpp"
 
 int main(const int argc, const char *const *const argv) {
+    maze_solver::Wall w;
+    w.flags = 0x9;
+    std::cout << std::boolalpha
+              << w.north_exists << ","
+              << w.east_exists << ","
+              << w.south_exists << ","
+              << w.west_exists << std::endl;
+
+//    return 0;
+
     const std::vector<std::string> args(argv, argv + argc);
 
     const auto maze_file = [&args]() {
         try {
             return args.at(1);
         } catch (std::exception &e) {
-            return std::string(getenv("HOME")) + "/micromouse/maze_data/maze.txt";
+            return std::string(DEFAULT_MAZE_FILE);
         }
     }();
 
@@ -20,7 +31,7 @@ int main(const int argc, const char *const *const argv) {
         try {
             return args.at(2);
         } catch (std::exception &e) {
-            return std::string(getenv("HOME")) + "/micromouse/maze_solver/search_route.csv";
+            return std::string(DEFAULT_SEARCH_OUTPUT_FILE);
         }
     }();
 
@@ -28,7 +39,7 @@ int main(const int argc, const char *const *const argv) {
         try {
             return args.at(3);
         } catch (std::exception &e) {
-            return std::string(getenv("HOME")) + "/micromouse/maze_solver/optimal_route.csv";
+            return std::string(DEFAULT_SHOTEST_OUTPUT_FILE);
         }
     }();
 
@@ -50,9 +61,14 @@ int main(const int argc, const char *const *const argv) {
     std::cout << "goal: " << goal << std::endl;
 
     maze_solver::a_star::Solver<MAZE_SIZE> solver(start, goal);
+
+    auto s = std::chrono::system_clock::now();
+//    for (int i = 0; i < 30; ++i) {
     solver.solve(maze);
-    solver.solve(maze);
-    solver.solve(maze);
+//    }
+    auto e = std::chrono::system_clock::now();
+    std::cout << "calculation time[ms]: "
+              << 0.000001f * std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count() << std::endl;
 
     const auto search_route = solver.search_route;
     const auto optimal_route = solver.CalculateOptimalRoute();

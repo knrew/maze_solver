@@ -18,8 +18,8 @@ namespace maze_solver {
         struct {
             bool north_exists:1;
             bool east_exists:1;
-            bool west_exists:1;
             bool south_exists:1;
+            bool west_exists:1;
             bool is_known_north:1;
             bool is_known_east:1;
             bool is_known_south:1;
