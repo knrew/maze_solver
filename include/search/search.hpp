@@ -28,18 +28,20 @@ namespace maze_solver {
             shortest_ = astar_.GetShortestRoute();
         }
 
-        Coordinate CalculateNext(const Coordinate &current) {
+        Coordinate CalculateNext(const Coordinate &current, bool &ok) {
             const auto d = GetDirection(current, shortest_[1]);
             if (maze_[current].WallExists(d)) {
-                astar_.solve(maze_, current, goal_);
+                if (!astar_.solve(maze_, current, goal_)) { ok = false; }
                 shortest_ = astar_.GetShortestRoute();
             }
 
             const auto ret = shortest_[1];
             if (shortest_[0] == current) {
                 shortest_.pop_front();
+                ok = true;
                 return std::move(ret);
             } else {
+                ok = true;
                 return std::move(shortest_[0]);
             }
         }

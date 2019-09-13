@@ -50,9 +50,9 @@ int main(const int argc, const char *const *const argv) {
 
     const auto s = std::chrono::system_clock::now();
 
-    maze_solver::astar::AStar<MAZE_SIZE> solver(start, goal);
+    maze_solver::astar::AStar<MAZE_SIZE> solver;
 
-    if (!solver.solve(maze)) {
+    if (!solver.solve(maze, start, goal)) {
         std::cout << "this maze cannot solve." << std::endl;
     }
     const auto search_route = solver.GetSearchRoute();
