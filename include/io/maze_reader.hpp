@@ -34,8 +34,20 @@ namespace maze_solver {
             for (const auto &e : raw_maze) {
                 const auto line = Split(e, ' ');
                 for (std::size_t x = 0; x < line.size(); ++x) {
-                    if (line[x] == "") { continue; }
-                    maze[Coordinate(x, y)].flags = std::stoi(line[x], nullptr, 16);
+                    if (line[x].empty()) { continue; }
+                    const auto b = std::bitset<8>(std::stoi(line[x], nullptr, 16));
+                    /*
+                     * TODO:????
+                     */
+                    maze[Coordinate(x, y)].north_exists = b[0];
+                    maze[Coordinate(x, y)].east_exists = b[1];
+                    maze[Coordinate(x, y)].south_exists = b[2];
+                    maze[Coordinate(x, y)].west_exists = b[3];
+                    maze[Coordinate(x, y)].is_known_north = b[4];
+                    maze[Coordinate(x, y)].is_known_east = b[5];
+                    maze[Coordinate(x, y)].is_known_south = b[6];
+                    maze[Coordinate(x, y)].is_known_west = b[7];
+//                    maze[Coordinate(x, y)].flags = std::stoi(line[x], nullptr, 16);
                 }
                 --y;
             }

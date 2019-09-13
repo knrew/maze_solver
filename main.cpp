@@ -12,7 +12,7 @@ int main(const int argc, const char *const *const argv) {
         try {
             return args.at(1);
         } catch (std::exception &e) {
-            return std::string(getenv("HOME")) + "/micromouse/maze_data/maze0000.txt";
+            return std::string(getenv("HOME")) + "/micromouse/maze_data/maze.txt";
         }
     }();
 
@@ -35,38 +35,27 @@ int main(const int argc, const char *const *const argv) {
     std::cout << "maze data: " << maze_file << std::endl;
 
     const auto maze = maze_solver::MazeReader<MAZE_SIZE>()(maze_file);
-    const auto start = maze_solver::Coordinate(0, 0);
-    const auto goal = maze_solver::Coordinate(7, 7);
+    constexpr auto start = maze_solver::Coordinate(START_X, START_Y);
+    constexpr auto goal = maze_solver::Coordinate(GOAL_X, GOAL_Y);
 
-    std::for_each(maze.cbegin(), maze.cend(), [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
+//    std::for_each(maze.cbegin(), maze.cend(), [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
+    for (int8_t y = MAZE_SIZE - 1; y >= 0; --y) {
+        for (int8_t x = 0; x < MAZE_SIZE; ++x) {
+            printf("%x ", maze[{x, y}].flags);
+        }
+        std::cout << std::endl;
+    }
 
     std::cout << "start: " << start << std::endl;
     std::cout << "goal: " << goal << std::endl;
 
-    maze_solver::Route search_route;
-    maze_solver::a_star::Solver<MAZE_SIZE> a_star(start, goal);
+    maze_solver::a_star::Solver<MAZE_SIZE> solver(start, goal);
+    solver.solve(maze);
+    solver.solve(maze);
+    solver.solve(maze);
 
-    while (true) {
-        if (a_star.HasFoundAnswer()) {
-            break;
-        }
-
-        if (a_star.HasNoAnswer()) {
-            std::cout << "This maze cannot be solved." << std::endl;
-            break;
-        }
-
-        a_star.CalculateNextNode();
-        const auto target = a_star.GetNextNodeCoordinate();
-
-        search_route.emplace_back(target);
-
-        auto wall = maze[target];
-        wall.is_known_north = wall.is_known_east = wall.is_known_south = wall.is_known_west = true;
-        a_star.SetWall(target, wall);
-    }
-
-    const auto optimal_route = a_star.CalculateOptimalRoute();
+    const auto search_route = solver.search_route;
+    const auto optimal_route = solver.CalculateOptimalRoute();
 
     std::cout << "search route  | ";
     std::for_each(search_route.cbegin(), search_route.cend(), [](const auto &c) { std::cout << c << ","; });

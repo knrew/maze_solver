@@ -3,17 +3,14 @@
 //
 #pragma once
 
-#include <cstdint>
+#include "../common/mymath.hpp"
+#include "../common/route.hpp"
 #include "../common/maze.hpp"
 #include "../common/wall.hpp"
-#include "../common/route.hpp"
 #include "node.hpp"
 #include "open_list.hpp"
-#include "../common/mymath.hpp"
 
-#define ENABLE_COUT
-
-#if defined(ENABLE_COUT)
+#if defined(ASTAR_SOLVER_DEBUG)
 
 #include <iostream>
 #include <bitset>
@@ -22,61 +19,125 @@
 
 namespace maze_solver {
     namespace a_star {
-        template<std::size_t kMazeSize>
+        template<const std::size_t kMazeSize>
         class Solver {
         public:
             explicit Solver(const Coordinate &start, const Coordinate &goal) :
-                    start_(start),
-                    goal_(goal),
-                    target_(start),
-                    maze_(),
+                    start_(start), goal_(goal),
                     nodes_(),
                     open_(nodes_),
-                    has_no_answer_(false),
-                    has_found_answer_(false) {
+                    has_no_answer_(false) {
+
+            }
+
+            void solve(const Maze<Wall, kMazeSize> &maze) {
+#if defined(ASTAR_SOLVER_DEBUG)
+                std::cout << "solver start." << std::endl;
+#endif
+                maze_ = maze;
+
+                open_.clear();
                 nodes_[start_].setCostF(CalculateHeuristic(start_));
                 nodes_[start_].toOpen();
                 open_.emplace(nodes_[start_]);
+
+                search_route.clear();
+                while (true) {
+                    if (open_.empty()) {
+                        has_no_answer_ = true;
+                        break;
+                    }
+
+                    const auto top_node = open_.top();
+                    search_route.emplace_back(top_node.getCoordinate());
+                    open_.pop();
+
+#if defined(ASTAR_SOLVER_DEBUG)
+                    std::cout << "top:" << top_node.getCoordinate() << "|";
+#endif
+
+                    if (IsGoal(top_node)) {
+                        nodes_[goal_] = top_node;
+                        break;
+                    }
+
+#if defined(ASTAR_SOLVER_DEBUG)
+                    printf("%x|", maze[top_node.getCoordinate()].flags);
+                    std::cout << std::bitset<4>(maze[top_node.getCoordinate()].flags) << "|";
+#endif
+
+                    static std::deque<Coordinate> adjacent_node_coordinates;
+                    adjacent_node_coordinates.clear();
+                    adjacent_node_coordinates = GetAdjacentNodeCoordinates(top_node);
+
+#if defined(ASTAR_SOLVER_DEBUG)
+                    std::cout << "adj:";
+#endif
+                    for (const auto &m : adjacent_node_coordinates) {
+                        const auto f_tmp = CalculateNextCostF(top_node, m);
+
+#if defined(ASTAR_SOLVER_DEBUG)
+                        std::cout << m << ",";
+#endif
+
+                        const auto update_node = [&]() {
+                            nodes_[m].setParentCoordinate(top_node.getCoordinate());
+                            nodes_[m].setCostF(f_tmp);
+                            nodes_[m].toOpen();
+                            open_.emplace(nodes_[m]);
+                        };
+
+                        if (!nodes_[m].isOpen() && !nodes_[m].isClose()) {
+                            update_node();
+                        } else if (f_tmp < nodes_[m].getCostF()) {
+                            update_node();
+                        } else {}
+                    }
+
+#if defined(ASTAR_SOLVER_DEBUG)
+                    std::cout << std::endl;
+#endif
+
+                    nodes_[top_node.getCoordinate()].toClose();
+
+#if defined(ASTAR_SOLVER_DEBUG)
+                    std::cout << "-----" << std::endl;
+#endif
+                }
+
+                if (has_no_answer_) {
+#if defined(ASTAR_SOLVER_DEBUG)
+                    std::cout << "this maze cannot solve." << std::endl;
+#endif
+                }
+
+#if defined(ASTAR_SOLVER_DEBUG)
+                std::cout << "solver finish." << std::endl;
+#endif
             }
 
-            void CalculateNextNode() {
-#if defined(ENABLE_COUT)
-                std::cout << "----------" << std::endl;
-#endif
+            auto CalculateOptimalRoute() const {
+                Route optimal_route;
+//                if (!has_found_answer_) { return optimal_route; }
 
-                if (has_found_answer_) { return; }
-
-                if (open_.empty()) {
-                    has_no_answer_ = true;
-                    return;
+                Node n = nodes_[goal_];
+                while (n.getCoordinate() != start_) {
+                    optimal_route.emplace_front(n.getCoordinate());
+                    n = nodes_[n.getParentCoordinate()];
                 }
+                optimal_route.emplace_front(nodes_[start_].getCoordinate());
 
-                const auto top_node = open_.top();
+                return std::move(optimal_route);
+            }
 
-                if (IsGoal(top_node)) {
-                    target_ = top_node.getCoordinate();
-                    nodes_[goal_] = top_node;
-                    has_found_answer_ = true;
-                    return;
-                }
-
-#if defined(ENABLE_COUT)
-                std::cout << "top_node: " << top_node.getCoordinate() << " |  "
-                          << std::bitset<8>(maze_[top_node.getCoordinate()].flags) << std::endl;
-#endif
-
-                if (!maze_[top_node.getCoordinate()].IsKnownAllDirection()) {
-                    target_ = top_node.getCoordinate();
-                    return;
-                }
-
-                static std::deque<Coordinate> adjacent_node_coordinates;
-                adjacent_node_coordinates.clear();
+        private:
+            auto GetAdjacentNodeCoordinates(const Node &node) {
+                std::deque<Coordinate> adjs;
 
                 for (const auto d : {Wall::Direction::kNorth, Wall::Direction::kEast,
                                      Wall::Direction::kSouth, Wall::Direction::kWest}) {
-                    auto c = top_node.getCoordinate();
-                    if (!maze_[top_node.getCoordinate()].WallExists(d)) {
+                    auto c = node.getCoordinate();
+                    if (!maze_[node.getCoordinate()].WallExists(d)) {
                         switch (d) {
                             case Wall::Direction::kNorth:
                                 ++c.y;
@@ -93,81 +154,19 @@ namespace maze_solver {
                         }
 
                         if (math::IsOnRange(c, {0, 0}, {kMazeSize - 1, kMazeSize - 1})) {
-                            adjacent_node_coordinates.emplace_back(c);
+                            adjs.emplace_back(c);
                         }
                     }
                 }
 
-                open_.pop();
-
-#if defined(ENABLE_COUT)
-                std::cout << "adj: ";
-#endif
-                for (const auto &m : adjacent_node_coordinates) {
-                    const auto f_tmp = CalculateNextCostF(top_node, m);
-
-#if defined(ENABLE_COUT)
-                    std::cout << m << "[" << f_tmp << "], ";
-#endif
-
-                    const auto update_node = [&]() {
-                        nodes_[m].setParentCoordinate(top_node.getCoordinate());
-                        nodes_[m].setCostF(f_tmp);
-                        nodes_[m].toOpen();
-                        open_.emplace(nodes_[m]);
-                    };
-
-                    if (!nodes_[m].isOpen() && !nodes_[m].isClose()) {
-                        update_node();
-                    } else if (f_tmp < nodes_[m].getCostF()) {
-                        update_node();
-                    } else {}
-                }
-
-#if defined(ENABLE_COUT)
-                std::cout << std::endl;
-#endif
-
-                nodes_[top_node.getCoordinate()].toClose();
-                CalculateNextNode();
+                return std::move(adjs);
             }
 
-            auto CalculateOptimalRoute() const {
-                Route optimal_route;
-                optimal_route.clear();
-
-                if (!has_found_answer_) { return optimal_route; }
-
-                Node n = nodes_[goal_];
-                while (n.getCoordinate() != start_) {
-                    optimal_route.emplace_front(n.getCoordinate());
-                    n = nodes_[n.getParentCoordinate()];
-                }
-                optimal_route.emplace_front(nodes_[start_].getCoordinate());
-
-                return std::move(optimal_route);
-            }
-
-            const Coordinate &GetNextNodeCoordinate() const { return target_; }
-
-            const Node &GetGoalNode() const { return nodes_[goal_]; }
-
-            bool HasFoundAnswer() const { return has_found_answer_; }
-
-            bool HasNoAnswer() const { return has_no_answer_; }
-
-            void SetWall(const Coordinate &c, const Wall &w) { maze_[c] = w; }
-
-        private:
             float CalculateNextCostF(const Node &current, const Coordinate &next) const {
                 const auto h = CalculateHeuristic(current.getCoordinate());
                 const auto g = current.getCostF() - h;
                 const auto f = g + CalculateHeuristic(next) + 1;
                 return f;
-            }
-
-            float CalculateHeuristic(const Node &node) const {
-                return CalculateHeuristic(node.getCoordinate());
             }
 
             float CalculateHeuristic(const Coordinate &c) const {
@@ -178,13 +177,15 @@ namespace maze_solver {
                 return node.getCoordinate() == goal_;
             }
 
-            const Coordinate start_, goal_;
-            Coordinate target_;
             Maze<Wall, kMazeSize> maze_;
+            const Coordinate start_, goal_;
             Nodes<kMazeSize> nodes_;
             OpenList<kMazeSize> open_;
             bool has_no_answer_;
-            bool has_found_answer_;
+
+        public:
+            Route search_route;
+            Route shortest_route;
         };
     }
 }

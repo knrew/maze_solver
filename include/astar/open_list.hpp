@@ -29,6 +29,8 @@ namespace maze_solver {
                         return Node::Compare()(nodes_.GetWithIndex(a), nodes_.GetWithIndex(b));
                     }) {};
 
+            void clear() noexcept { this->ids_.clear(); }
+
             bool empty() const { return ids_.empty(); }
 
             typename NodeContainer::size_type size() const { return ids_.size(); }
