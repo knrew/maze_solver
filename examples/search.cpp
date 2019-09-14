@@ -45,12 +45,19 @@ int main(const int argc, const char *const *const argv) {
 //    std::for_each(maze.cbegin(), maze.cend(), [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
     print_maze(maze, MAZE_SIZE);
 
+    const auto s = std::chrono::system_clock::now();
+    const auto time_ms = [&s]() -> float {
+        const auto e = std::chrono::system_clock::now();
+        return 0.000001f * static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count());
+    };
+    const auto timeout = [&time_ms]() { return time_ms() > 100; };
+
     auto current = start;
 
     maze_solver::Route search_route;
     maze_solver::Search<MAZE_SIZE> search;
 
-    const auto transfer = [&search, &maze, &search_route](auto &_current, const auto &_goal) -> bool {
+    const auto transfer = [&search, &maze, &search_route, &timeout](auto &_current, const auto &_goal) -> bool {
         search.ChangeGoal(_current, _goal);
         search.ReachNext(maze[_current]);
         search_route.emplace_back(_current);
@@ -59,16 +66,10 @@ int main(const int argc, const char *const *const argv) {
             _current = search.GetNext();
             search.ReachNext(maze[_current]);
             search_route.emplace_back(_current);
-            if (!ok) { return false; }
+            if (!ok || timeout()) {return false;}
         }
 
         return true;
-    };
-
-    const auto s = std::chrono::system_clock::now();
-    const auto time_ms = [&s]() -> float {
-        const auto e = std::chrono::system_clock::now();
-        return 0.000001f * static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count());
     };
 
     //start -> goal
@@ -83,7 +84,7 @@ int main(const int argc, const char *const *const argv) {
         search.ChangeGoal(start, goal);
         auto unvisited = search.FindUnvisitedBlocks();
         auto target = unvisited[0];
-        while (!unvisited.empty()) {
+        while (!unvisited.empty() && !timeout()) {
             const auto ok = transfer(current, target);
             if (ok) {
                 search.ChangeGoal(start, goal);
@@ -91,7 +92,8 @@ int main(const int argc, const char *const *const argv) {
                 target = unvisited[0];
             } else {
                 if (unvisited.size() >= 2) {
-                    target = unvisited[1];
+                    unvisited.pop_front();
+                    target = unvisited[0];
                 } else {
                     break;
                 }
@@ -109,7 +111,7 @@ int main(const int argc, const char *const *const argv) {
     search.ChangeGoal(start, goal);
     const auto shortest = search.GetShortestRoute();
 
-    std::cout << "time[ms]: " << time_ms() << std::endl;
+//    std::cout << "time[ms]: " << time_ms() << std::endl;
     std::cout << "count astar: " << search.GetCountSolve() << std::endl;
 
     {
