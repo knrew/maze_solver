@@ -38,8 +38,6 @@ int main(const int argc, const char *const *const argv) {
 
     std::cout << "maze data: " << maze_file << std::endl;
 
-//    return 0;
-
     auto maze = maze_solver::MazeReader<MAZE_SIZE>()(maze_file);
     constexpr auto start = maze_solver::Coordinate(START_X, START_Y);
     constexpr auto goal = maze_solver::Coordinate(GOAL_X, GOAL_Y);
@@ -47,43 +45,46 @@ int main(const int argc, const char *const *const argv) {
 //    std::for_each(maze.cbegin(), maze.cend(), [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
     print_maze(maze, MAZE_SIZE);
 
+    auto current = start;
+
     maze_solver::Route search_route;
     maze_solver::Search<MAZE_SIZE> search;
 
-    const auto transfer = [&search, &maze, &search_route](const auto &s, const auto &g, bool &ok)
-            -> maze_solver::Coordinate {
-        search.ChangeGoal(s, g);
-        auto current = s;
-        search.ReachNext(maze[current]);
-        search_route.emplace_back(current);
-        while (current != g) {
-            ok = search.CalculateNext();
-            current = search.GetNext();
-            search.ReachNext(maze[current]);
-            search_route.emplace_back(current);
-            if (!ok) { break; }
+    const auto transfer = [&search, &maze, &search_route](auto &_current, const auto &_goal) -> bool {
+        search.ChangeGoal(_current, _goal);
+        search.ReachNext(maze[_current]);
+        search_route.emplace_back(_current);
+        while (_current != _goal) {
+            const auto ok = search.CalculateNext();
+            _current = search.GetNext();
+            search.ReachNext(maze[_current]);
+            search_route.emplace_back(_current);
+            if (!ok) { return false; }
         }
 
-        return std::move(current);
+        return true;
     };
 
-    bool ok = true;
+    const auto s = std::chrono::system_clock::now();
+    const auto time_ms = [&s]() -> float {
+        const auto e = std::chrono::system_clock::now();
+        return 0.000001f * static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count());
+    };
 
     //start -> goal
-    auto current = transfer(start, goal, ok);
-    if (!ok) { std::cout << "this maze cannot solve." << std::endl; }
+    if (!transfer(current, goal)) {
+        std::cout << "this maze cannot solve." << std::endl;
+    }
 
     /*
      * 最短経路になりうるもののうち，未訪問の区画を探索
      */
-    search.ChangeGoal(start, goal);
     {
+        search.ChangeGoal(start, goal);
         auto unvisited = search.FindUnvisitedBlocks();
         auto target = unvisited[0];
         while (!unvisited.empty()) {
-            std::cout << current << std::endl;
-
-            current = transfer(current, target, ok);
+            const auto ok = transfer(current, target);
             if (ok) {
                 search.ChangeGoal(start, goal);
                 unvisited = search.FindUnvisitedBlocks();
@@ -101,10 +102,15 @@ int main(const int argc, const char *const *const argv) {
     /*
      * startへ戻る
      */
-    current = transfer(current, start, ok);
+    if (!transfer(current, start)) {
+        std::cout << "cannot return start????" << std::endl;
+    }
 
     search.ChangeGoal(start, goal);
     const auto shortest = search.GetShortestRoute();
+
+    std::cout << "time[ms]: " << time_ms() << std::endl;
+    std::cout << "count astar: " << search.GetCountSolve() << std::endl;
 
     {
         auto u = search.FindUnvisitedBlocks();

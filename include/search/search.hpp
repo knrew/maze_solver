@@ -16,7 +16,7 @@ namespace maze_solver {
             kSearchGoal, kSearchShortest, kToStart, kFinished
         };
 
-        Search() : goal_(), maze_(), astar_(), shortest_(), state_(State::kSearchGoal) {}
+        Search() : goal_(), maze_(), astar_(), shortest_(), state_(State::kSearchGoal), count_solve(0) {}
 
         /*
          * 次進むべき区画を計算する．
@@ -29,6 +29,7 @@ namespace maze_solver {
         bool CalculateNext() {
             const auto d = GetDirection(current_, shortest_[1]);
             if (maze_[current_].WallExists(d)) {
+                ++count_solve;
                 if (!astar_.solve(maze_, current_, goal_)) { return false; }
                 shortest_ = astar_.GetShortestRoute();
             }
@@ -47,6 +48,7 @@ namespace maze_solver {
             current_ = current;
             goal_ = goal;
             next_ = current;
+            ++count_solve;
             if (!astar_.solve(maze_, current_, goal_)) { return false; }
             shortest_ = astar_.GetShortestRoute();
 
@@ -64,25 +66,38 @@ namespace maze_solver {
         /*
          * 最短経路上にあって，未訪問の区画をリストアップ
          */
-        auto FindUnvisitedBlocks() {
-            std::deque<Coordinate> ret;
+        auto FindUnvisitedBlocks() const {
+            static std::deque<Coordinate> ret;
+            ret.clear();
             for (const auto &c : shortest_) {
-                if (!maze_[c].IsKnownAllDirection()) { ret.emplace_back(c); }
+                if (!maze_[c].IsKnownAllDirection()) { ret.emplace_front(c); }
             }
 
             return std::move(ret);
         }
 
-        void SetWall(const Coordinate &c, const Wall &w) { maze_[c] = w; }
+        const Coordinate &FindNearestUnvisitedBlock() const {
+            for (const auto &c : shortest_) {
+                if (!maze_[c].IsKnownAllDirection()) { return c; }
+            }
+            return *shortest_.cend();
+        };
+
+        void SetWall(const Coordinate &c, const Wall &w) {
+            maze_[c] = w;
+            maze_[c].SetKnownAll(true);
+        }
 
         const Coordinate &GetNext() const { return next_; }
 
-        Route GetShortestRoute() const { return astar_.GetShortestRoute(); }
+        auto GetShortestRoute() const { return astar_.GetShortestRoute(); }
 
         /*
          * デバッグ用．使う必要はないはず
          */
         auto GetCurrent() const { return current_; }
+
+        auto GetCountSolve() const { return count_solve; }
 
     protected:
         /*
@@ -105,5 +120,6 @@ namespace maze_solver {
         astar::AStar<kMazeSize> astar_;
         Route shortest_;
         State state_;
+        uint32_t count_solve;
     };
 }
