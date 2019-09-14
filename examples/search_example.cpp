@@ -10,6 +10,22 @@ template<class TMaze>
 void print_maze(const TMaze &, const std::size_t &);
 
 int main(const int argc, const char *const *const argv) {
+    /*
+     * process
+     */
+    const auto time_ms = []() -> float {
+        static const auto s = std::chrono::system_clock::now();
+        const auto e = std::chrono::system_clock::now();
+        return 0.000001f * static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count());
+    };
+    const auto timeout = [&time_ms]() {
+        if (time_ms() > 150) {
+            std::cout << "timeout!" << std::endl;
+            return true;
+        }
+        return false;
+    };
+
     const std::vector<std::string> args(argv, argv + argc);
 
     const auto maze_file = [&args]() {
@@ -45,13 +61,6 @@ int main(const int argc, const char *const *const argv) {
 //    std::for_each(maze.cbegin(), maze.cend(), [](const auto &c) { std::cout << std::bitset<8>(c.flags) << std::endl; });
     print_maze(maze, MAZE_SIZE);
 
-    const auto s = std::chrono::system_clock::now();
-    const auto time_ms = [&s]() -> float {
-        const auto e = std::chrono::system_clock::now();
-        return 0.000001f * static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(e - s).count());
-    };
-    const auto timeout = [&time_ms]() { return time_ms() > 100; };
-
     auto current = start;
 
     maze_solver::Route search_route;
@@ -66,7 +75,7 @@ int main(const int argc, const char *const *const argv) {
             _current = search.GetNext();
             search.ReachNext(maze[_current]);
             search_route.emplace_back(_current);
-            if (!ok || timeout()) {return false;}
+            if (!ok || timeout()) { return false; }
         }
 
         return true;
@@ -130,6 +139,8 @@ int main(const int argc, const char *const *const argv) {
 
     maze_solver::RouteWriter()(search_route_output_file, search_route);
     maze_solver::RouteWriter()(shortest_route_output_file, shortest);
+
+    std::cout << "time[ms]: " << time_ms() << std::endl;
 
     return 0;
 }
