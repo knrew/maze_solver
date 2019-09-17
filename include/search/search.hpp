@@ -77,7 +77,7 @@ namespace maze_solver {
                      * start-goal間の最短経路を再計算し，現在位置currentから最も近い未探索区画を新しいtargetとする．
                      */
                     if (current_ == target_) {
-                        if (astar_.solve(maze_, start_, goal_)) {
+                        if (!astar_.solve(maze_, start_, goal_)) {
                             state_ = State::kNoAnswer;
                             return false;
                         }
@@ -151,6 +151,9 @@ namespace maze_solver {
             maze_[c].SetKnownAll(true);
         }
 
+        /*
+         * TODO:これをいつ呼び出しもstart-goal間の最短距離を返すように改良
+         */
         const Route &GetShortestRoute() const {
             return shortest_;
         }
