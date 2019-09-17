@@ -3,4 +3,4 @@ project(maze_solver)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_subdirectory(examples)
+add_subdirectory(tests)

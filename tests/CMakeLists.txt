@@ -1,5 +1,5 @@
-add_executable(astar_exsample astar_example.cpp)
-add_executable(search_exsample search_example.cpp)
+add_executable(astar_test astar_test.cpp)
+add_executable(search_test search_test.cpp)
 
 add_definitions(-DMAZE_SIZE=\(16\))
 add_definitions(-DSTART_X=\(0\))
