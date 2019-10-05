@@ -7,7 +7,7 @@
 #include <type_traits>
 #include "maze_constants.hpp"
 
-namespace maze_solver::math {
+namespace maze_solver::utility {
     template<typename T>
     static constexpr bool IsOnRange(const T &val) {
         constexpr bool is_integer =

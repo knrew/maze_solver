@@ -9,6 +9,7 @@
 #include "maze_constants.hpp"
 
 namespace maze_solver {
+
     template<class TNode, typename TContainer = std::deque<TNode>>
     class Maze {
     public:
@@ -16,6 +17,7 @@ namespace maze_solver {
         using const_iterator = typename TContainer::const_iterator;
         using reference = typename TContainer::reference;
         using const_reference = typename TContainer::const_reference;
+        using value_type = typename TContainer::value_type;
 //        using size_type = typename TSequence::size_type;
         using size_type = std::int32_t;
 

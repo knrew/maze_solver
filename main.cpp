@@ -2,22 +2,21 @@
 #include "include/maze.hpp"
 #include "include/wall.hpp"
 #include "include/coordinate.hpp"
-#include "include/maze_math.hpp"
+#include "include/utility.hpp"
+#include "include/a_star/a_star.hpp"
+
+std::tuple<int, int, int> poyo() {
+    return {1, 1, 1};
+}
 
 int main() {
     using namespace maze_solver;
 
-    Maze<Coordinate> maze;
+    const auto maze = Maze<Wall>();
 
-    int i = 0;
-    for (auto &m : maze) {
-        m = Coordinate(i, i * 2);
-        ++i;
-    }
+    auto searcher = a_star::AStar();
 
-    for (const auto &m : maze) {
-        std::cout << m << "|" << std::boolalpha << math::IsOnRange(m) << std::endl;
-    }
+    searcher.Solve(maze, {0, 0}, {0, 0});
 
     return 0;
 }
