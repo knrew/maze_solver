@@ -32,7 +32,7 @@ namespace maze_solver {
             return is_known_north && is_known_east && is_known_south && is_known_west;
         }
 
-        void SetKnownAll(const bool is_known) {
+        void SetKnownAll(const bool is_known) noexcept {
             is_known_north = is_known_east = is_known_south = is_known_west = is_known;
         }
 
