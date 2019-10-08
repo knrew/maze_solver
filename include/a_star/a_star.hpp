@@ -25,7 +25,9 @@ namespace maze_solver::a_star {
             auto state = State::kOk;
 
             open.bindNodesPtr(&nodes);
-            open.bindCompareFunction();
+            open.bindCompareFunction([&nodes](const std::int32_t a, const std::int32_t b) {
+                return nodes[Coordinate::DecodeHash()(a)].cost_f < nodes[Coordinate::DecodeHash()(b)].cost_f;
+            });
 
             nodes[start].cost_f = CalculateHeuristic(start, goal);
             nodes[start].state = Node::State::kOpen;

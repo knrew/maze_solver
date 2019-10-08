@@ -24,11 +24,8 @@ namespace maze_solver ::a_star {
             nodes_ = nodes;
         }
 
-        void bindCompareFunction() {
-//            *compare_ = std::move(compare);
-            *compare_ = [&nodes_](const std::int32_t a, const std::int32_t b) {
-                return (*nodes_)[Coordinate::DecodeHash()(a)].cost_f < (*nodes_)[Coordinate::DecodeHash()(b)].cost_f;
-            };
+        void bindCompareFunction(Compare &&compare) {
+            *compare_ = std::move(compare);
         }
 
         void clear() noexcept { this->ids_.clear(); }
@@ -48,7 +45,7 @@ namespace maze_solver ::a_star {
             std::push_heap(ids_.begin(), ids_.end(), compare_);
         }
 
-        template<typename T>
+        template <typename T>
         void emplace(const T &x) {
             push(x);
         }

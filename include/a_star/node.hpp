@@ -26,7 +26,7 @@ namespace maze_solver::a_star {
         Direction child;
         State state;
         float cost_f;
-
+　
         Node() : parent(Direction::kNorth), child(Direction::kNorth), state(State::kNone), cost_f(0.f) {}
     };
 
